@@ -1,7 +1,7 @@
 /*
 可以自由定制显示的天气脚本,想怎样都随你,轻松修改轻松查看
 https://github.com/sazs34/TaskConfig/blob/master/assets/weather_pro.md
- */
+ */ 
 let config = {
     darksky_api: "3c80d934cb39f805ff3455a90404adbe", //从https://darksky.net/dev/ 上申请key填入即可
     aqicn_api: "9daa8632c28ad0060457c62b6b610ec2382fc6d9", //从http://aqicn.org/data-platform/token/#/ 上申请key填入即可
