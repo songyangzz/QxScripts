@@ -1,6 +1,6 @@
 const global = {
     log: 1, //日志模式:0不显示 1全部显示 2精简显示,推荐值:1
-    parallel: false, //是否顺序签到(true则同时签到,可能会出现内存占用过高导致执行失败的情况;false则签到速度会慢一些,但是很稳)
+    parallel: true, //是否顺序签到(true则同时签到,可能会出现内存占用过高导致执行失败的情况;false则签到速度会慢一些,但是很稳)
     sign: { //用于设置哪些需要进行签到,哪些不处理
         baidu_tieba: true,
         iqiyi: true,
@@ -907,14 +907,13 @@ let execute = () => {
                     }
                 } catch (e) {
                     config.eleme.data.notify = `[${config.eleme.name}] 签到失败！数据解析异常⚠️`;
-                    finalNotify("eleme");
                     record(`${config.eleme.data.notify} : ${JSON.stringify(e)}`);
+                    finalNotify("eleme");
                 }
-
             }, reason => {
                 config.eleme.data.notify = `[${config.eleme.name}] 签到失败！网络请求异常⚠️`;
-                finalNotify("eleme");
                 record(`${config.eleme.data.notify} : ${reason.error}`);
+                finalNotify("eleme");
             })
         }
         let check = () => {
@@ -924,22 +923,19 @@ let execute = () => {
                     let result = JSON.parse(resp.body);
                     if (result && result.has_signed_in_today) {
                         config.eleme.data.notify = `[${config.eleme.name}] 今日已签到🎉`;
-                        finalNotify("eleme");
-                        record(config.eleme.data.notify);
                     } else {
                         config.eleme.data.notify = `[${config.eleme.name}] 签到失败`;
-                        finalNotify("eleme");
-                        record(config.eleme.data.notify);
                     }
+                    record(config.eleme.data.notify);
                 } catch (e) {
                     config.eleme.data.notify = `[${config.eleme.name}] 签到异常`;
-                    finalNotify("eleme");
                     record(`${config.eleme.data.notify}-${JSON.stringify(e)}`);
                 }
+                finalNotify("eleme");
             }, err => {
                 config.eleme.data.notify = `[${config.eleme.name}] 网络请求异常⚠️`;
-                finalNotify("eleme");
                 record(`${config.eleme.data.notify} : ${err.error}`);
+                finalNotify("eleme");
             })
         }
         let prize = () => {
@@ -1004,7 +1000,7 @@ let execute = () => {
             }
         }
         if (notSignItem && !global.parallel) {
-            //record(`准备执行${notSignItem}`);
+            record(`准备执行${notSignItem}`);
             eval(`sign_${notSignItem}()`);
             return;
         }
