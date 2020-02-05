@@ -56,34 +56,15 @@ h5.ele.me
 
 
 const CookieName = '饿了么'
-const CookieKey = 'cookie_elem'
-const UserId='user_id_elem'
+  const CookieKey = 'cookie_elem'
+  const UserId='user_id_elem'
 const matchid=/USERID=(\d+);/
 const sy = init()
 GetCookie();
 
 function GetCookie() {
-  console.log($request.header)
-  if ($request.header) {
-    var CookieValue = $request.header['Cookie'];
-    var userid=$request.header['Cookie'].replace(matchid,$1);
-    if (sy.getdata(user_id_elem) != (undefined || null)) {
-      if (sy.getdata(user_id_elem) != userid) {
-        var cookie = sy.setdata(userid, user_id_elem);
-        if (!cookie) {
-          sy.msg("更新" + CookieName + "UserID失败‼️", "", "");
-        } else {
-          sy.msg("更新" + CookieName + "UserID成功 🎉", "", "");
-        }
-      }
-    } else {
-      var cookie = sy.setdata(userid, user_id_elem);
-      if (!cookie) {
-        sy.msg("首次写入" + CookieName + "UserID失败‼️", "", "");
-      } else {
-        sy.msg("首次写入" + CookieName + "UserID成功 🎉", "", "");
-      }
-    }
+  if ($request.headers) {
+    var CookieValue = $request.headers['Cookie'];
     
     if (sy.getdata(CookieKey) != (undefined || null)) {
       if (sy.getdata(CookieKey) != CookieValue) {

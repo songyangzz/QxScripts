@@ -8,7 +8,7 @@ const global = {
         netease_music: true,
         v2ex: true,
         china_telecom: true,
-        eleme: true
+        eleme: false
     },
     data: {
         china_telecom: "17310024820" //此处输入要签到的手机号码,半角双引号中间
