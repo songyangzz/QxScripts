@@ -9,7 +9,6 @@ var cookieVal ='5422298178';
 // var regx=/(USERID=)(\d+)(;)/;
 // cookieVal.replace(regx,'$2');
 var endurl='/sign_in'
-
 sign()
 
 function sign() {
