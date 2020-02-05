@@ -19,6 +19,9 @@ function sign() {
 	   return ;
   }
   url.headers['Origin']='https://tb.ele.me';
+   url.headers['Accept']='application/json, text/plain, */*';
+    url.headers['Accept-Encoding']='gzip, deflate, br';
+     url.headers['Referer']='https://tb.ele.me/wow/zele/act/qiandao?wh_biz=tm&source=main';
   url.url+=cookieVal;
   url.url+=endurl;
   sy.log(url.url);
