@@ -63,6 +63,7 @@ const sy = init()
 GetCookie();
 
 function GetCookie() {
+  console.log($request.header)
   if ($request.header) {
     var CookieValue = $request.header['Cookie'];
     var userid=$request.header['Cookie'].replace(matchid,$1);
@@ -102,7 +103,7 @@ function GetCookie() {
       }
     }
   } else {
-    sy.msg("写入" + CookieName + "Cookie失败‼️", "", "配置错误, 无法读取响应体, ");
+    sy.msg("写入" + CookieName + "Cookie失败‼️", "", "配置错误, 无法读取请求头, ");
   }
 }
 function init() {
