@@ -9,6 +9,17 @@
 // #region 固定头部
 let isQuantumultX = $task != undefined; //判断当前运行环境是否是qx
 let isSurge = $httpClient != undefined; //判断当前运行环境是否是surge
+// 判断request还是respons
+// down方法重写
+var $done = (obj={}) => {
+    var isRequest = typeof $request != "undefined";
+    if (isQuantumultX) {
+        return isRequest ? $done({}) : ""
+    }
+    if (isSurge) {
+        return isRequest ? $done({}) : $done()
+    }
+}
 // http请求
 var $task = isQuantumultX ? $task : {};
 var $httpClient = isSurge ? $httpClient : {};
@@ -148,7 +159,7 @@ $httpClient.get('https://dict.youdao.com/infoline/style/cardList?mode=publish&cl
     let isAM = date.getHours() < 12 ? true : false
     let title = '每日' + (isAM ? ' 壹句' : ' 壹句') + (isAM ? ' ☀️' : ' 🌙');
     let subtitle = '';
-    let content = 'dingtalk://dingtalkclient/page/link?url=https://attend.dingtalk.com/attend/index.html';
+        let content = 'dingtalk://dingtalkclient/page/link?url=https://attend.dingtalk.com/attend/index.html';
     if (!error) {
         if (obj && obj.length > 1) {
             let yi = obj[1];

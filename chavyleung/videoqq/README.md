@@ -1,14 +1,12 @@
-# 腾讯视频
-
-**2020.1.6** **~~从 网页 获取 Cookie 只有 2 小时有效期，使用意义不大，先弃坑~~**
-
-**2020.1.7 从 APP 获取 Cookie，目测有效期能撑一段时间 (需要观察)**
+# 腾讯视频 (APP)
 
 > 代码已同时兼容 Surge & QuanX, 使用同一份签到脚本即可
 
 > 需要 VIP 会员才能签到 (需要 VIP!需要 VIP!需要 VIP!)
 
 > 2020.1.11 QuanX 在`190`版本开始, 获取 Cookie 方式需要从`script-response-body`改为`script-request-header`
+
+> 2020.2.5 如果你从 APP 中获取的 Cookie 容易失效 [请点这里](https://github.com/chavyleung/scripts/blob/master/videoqq/README.web.md)
 
 ## 配置 (Surge)
 

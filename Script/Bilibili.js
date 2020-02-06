@@ -63,9 +63,9 @@ if (-1 != $request.url.indexOf('/x/v2/reply/main') && 0 == body['code']) {
 
 // tab
 if (-1 != $request.url.indexOf('resource/show/tab?') && 0 == body['code']) {
-    // 会员购 动态
+    // 会员购
     body['data']['bottom'] = body['data']['bottom'].filter(function (item) {
-        return item.id != 180 && item.id != 179
+        return item.id != 180
     });
     // 70 直播 影视
     body['data']['tab'] = body['data']['tab'].filter(function (item) {
@@ -88,7 +88,7 @@ if (-1 != $request.url.indexOf('/x/v2/account/mine') && 0 == body['code']) {
             }
             item.items = item.items.filter(function (section_items) {
                 console.log(section_items.title);
-                if ((['我的关注', '我的钱包', '会员购中心', '直播中心', '青少年模式', '看视频免流量', 'BW 成就'].includes(section_items.title))) {
+                if ((['我的课程', '我的钱包', '会员购中心', '直播中心', '青少年模式', '看视频免流量', '我的客服'].includes(section_items.title))) {
                     return false;
                 }
                 return true;

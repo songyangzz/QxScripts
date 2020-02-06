@@ -1,57 +1,45 @@
-# 威锋网
+# 腾讯视频 (网页)
 
 > 代码已同时兼容 Surge & QuanX, 使用同一份签到脚本即可
-
-> 注意了威锋网只能在一处登录, 如果你手机上登录了, 其他地方的登录会话会被踢掉 (重新登录需要重新获取 Cookie)
-
-> 2020.1.11 QuanX 在`190`版本开始, 获取 Cookie 方式需要从`script-response-body`改为`script-request-header`
-
-> 2020.2.6 威锋加了验证, 弃坑
-
-> 2020.2.7 恢复签到
 
 ## 配置 (Surge)
 
 ```properties
 [MITM]
-*.feng.com
+*.video.qq.com
 
 [Script]
-http-request ^https:\/\/(www\.)?feng\.com\/?.? script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/feng/feng.cookie.js
-cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/feng/feng.js
+http-request ^https:\/\/access.video.qq.com\/user\/auth_refresh script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/videoqq/videoqq.cookie.js
+cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/videoqq/videoqq.js
 ```
 
 ## 配置 (QuanX)
 
 ```properties
 [MITM]
-*.feng.com
+*.video.qq.com
 
 [rewrite_local]
 # 189及以前版本
-^https:\/\/(www\.)?feng\.com\/?.? url script-response-body feng.cookie.js
+^https:\/\/access.video.qq.com\/user\/auth_refresh url script-response-body videoqq.cookie.js
 # 190及以后版本
-^https:\/\/(www\.)?feng\.com\/?.? url script-request-header feng.cookie.js
+^https:\/\/access.video.qq.com\/user\/auth_refresh url script-request-header videoqq.cookie.js
 
 [task_local]
-1 0 * * * feng.js
+1 0 * * * videoqq.js
 ```
 
 ## 说明
 
-1. 先在浏览器登录 `(先登录! 先登录! 先登录!)`
-   - 如果你找不到登录的入口: 随便找个帖子做个“回帖”的动作, 会提示你登录的.
-   - 可以试试: https://www.feng.com/newthread
-2. 先把`*.feng.com`加到`[MITM]`
-3. 再配置重写规则:
+1. 先把`*.video.qq.com`加到`[MITM]`
+2. 再配置重写规则:
    - Surge: 把两条远程脚本放到`[Script]`
-   - QuanX: 把`feng.cookie.js`和`feng.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
-4. 打开浏览器访问: https://www.feng.com
-5. 系统提示: `获取Cookie: 成功`
-   - 如果一直取不到 Cookie, 请尝试一切你想到的姿势, 如:
-   - 访问: https://www.feng.com/newthread
-   - 然后刷新下
-6. 最后就可以把第 1 条脚本注释掉了
+   - QuanX: 把`videoqq.cookie.js`和`videoqq.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
+3. 获取 Cookie:
+   - 手机浏览器访问: https://film.qq.com/
+   - 随便选 1 部电影观看
+4. 系统提示: `获取Cookie: 成功` （如果不提示获取成功, 点自己头像退出登录, 重新登录下应该就能获取）
+5. 最后就可以把第 1 条脚本注释掉了
 
 > 第 1 条脚本是用来获取 cookie 的, 用浏览器访问一次获取 cookie 成功后就可以删掉或注释掉了, 但请确保在`登录成功`后再获取 cookie.
 
