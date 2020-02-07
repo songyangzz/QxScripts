@@ -3,12 +3,12 @@ const global = {
     parallel: true, //是否顺序签到(true则同时签到,可能会出现内存占用过高导致执行失败的情况;false则签到速度会慢一些,但是很稳)
     sign: { //用于设置哪些需要进行签到,哪些不处理
         baidu_tieba: true,
-        iqiyi: true,
+        iqiyi: false,
         _52pojie: false,
         netease_music: true,
         v2ex: true,
         china_telecom: true,
-        eleme: true
+        eleme: false
     },
     data: {
         china_telecom: "17310024820" //此处输入要签到的手机号码,半角双引号中间
