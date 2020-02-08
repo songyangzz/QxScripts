@@ -6,9 +6,13 @@
 #订阅地址(https://raw.githubusercontent.com/nzw9314/QuantumultX/master/Get_Cookie_New.conf)
 
 <<<<<<< master
+<<<<<<< master
 hostname = api.m.jd.com, music.163.com, c.tieba.baidu.com, weibo.com, *.iqiyi.com, *.smzdm.com, *.v2ex.com, www.52pojie.cn, *.bilibili.com, *.feng.com, *.video.qq.com, *.acfun.cn, *.rrys2019.com, mobwsa.ximalaya.com, *.rr.tv, www.flyertea.com, wapside.189.cn, *.weixinjia.net, h5.ele.me, *.you.163.com, apk.tw, api.dongqiudi.com, *.m.163.com, 
 =======
 hostname = api.m.jd.com, music.163.com, c.tieba.baidu.com, weibo.com, *.iqiyi.com, *.smzdm.com, *.v2ex.com, www.52pojie.cn, *.bilibili.com, *.feng.com, *.video.qq.com, *.acfun.cn, *.rrys2019.com, mobwsa.ximalaya.com, *.rr.tv, www.flyertea.com, wapside.189.cn, *.weixinjia.net, h5.ele.me, *.you.163.com, apk.tw, api.dongqiudi.com, *.m.163.com, user.qunar.com, yuba.douyu.com, 
+>>>>>>> origin/master
+=======
+hostname = api.m.jd.com, music.163.com, c.tieba.baidu.com, weibo.com, *.iqiyi.com, *.smzdm.com, *.v2ex.com, www.52pojie.cn, *.bilibili.com, *.feng.com, *.video.qq.com, *.acfun.cn, *.rrys2019.com, mobwsa.ximalaya.com, *.rr.tv, www.flyertea.com, wapside.189.cn, *.weixinjia.net, h5.ele.me, *.you.163.com, apk.tw, api.dongqiudi.com, *.m.163.com, user.qunar.com, yuba.douyu.com, h5.rrhuodong.com, 
 >>>>>>> origin/master
 
 #京东签到获取cookie
@@ -56,6 +60,7 @@ https:\/\/manga\.bilibili\.com\/.*\.User\/GetWallet url script-request-header nz
 
 #人人字幕组获取cookie
 ^https?:\/\/(www\.)?rrys2019\.com\/?.? url script-request-header nzw9314/chavyleung/zimuzu/zimuzu.cookie.js
+^https?:\/\/h5.rrhuodong.com\/index.php.*m=clock url script-request-header nzw9314/chavyleung/zimuzu/zimuzu.cookie.js
 
 #喜马拉雅获取cookie
 ^https?:\/\/.*\/mobile\-user\/homePage\/.* url script-request-header nzw9314/chavyleung/ximalaya/ximalaya.cookie.js
