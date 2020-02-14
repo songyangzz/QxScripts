@@ -29,48 +29,21 @@ if (url.indexOf(path1) != -1) {
 
 if (url.indexOf(path2) != -1) {
     const body = $response.body
-    let obj = JSON.parse(body)
-    let apiStack = obj.data.apiStack[0]
-    let value = JSON.parse(apiStack.value)
-    if (value.global) {
-        let tradeConsumerProtection = value.global.data.tradeConsumerProtection
-        if (!tradeConsumerProtection) {
-            value.global.data["tradeConsumerProtection"] = customTradeConsumerProtection()
-        }
-        tradeConsumerProtection = value.global.data.tradeConsumerProtection
-        let service = tradeConsumerProtection.tradeConsumerService.service
-        let nonService = tradeConsumerProtection.tradeConsumerService.nonService
-
-        let item = obj.data.item
-        let shareUrl = `https://item.taobao.com/item.htm?id=${item.itemId}`
-
-        requestPrice(shareUrl, function (data) {
-            if (data) {
-                let historyItem = customItem()
-                if (data.ok == 1 && data.single) {
-                    const lower = lowerMsgs(data.single)
-                    const result = historyItems(data.single)
-                    const tbitems = result[1]
-                    service.items = service.items.concat(nonService.items)
-                    historyItem.desc = lower[0]
-                    historyItem.title = lower[1]
-                    service.items.unshift(historyItem)
-                    nonService.title = "价格走势"
-                    nonService.items = tbitems
-                }
-                if (data.ok == 0 && data.msg.length > 0) {
-                    historyItem.desc = data.msg
-                    service.items.push(historyItem)
-                }
-                apiStack.value = JSON.stringify(value)
-                $done({ body: JSON.stringify(obj) })
-            } else {
-                $done({ body })
+    const obj = JSON.parse(body)
+    let item = obj.data.item
+    let shareUrl = `https://item.taobao.com/item.htm?id=${item.itemId}`
+    $done({ body })
+    requestPrice(shareUrl, function (data) {
+        if (data) {
+            if (data.ok == 1 && data.single) {
+                const lower = lowerMsgs(data.single)
+                $tool.notify("", "", `${lower}\n\n👉 查看详情：http://tool.manmanbuy.com/historyLowest.aspx?url=${encodeURI(shareUrl)}`)
             }
-        })
-    } else {
-        $done({ body })
-    }
+            if (data.ok == 0 && data.msg.length > 0) {
+                $tool.notify("", "", `⚠️ ${data.msg}`)
+            }
+        }
+    })
 }
 
 function requestPrice(shareUrl, callback) {
@@ -96,43 +69,10 @@ function requestPrice(shareUrl, callback) {
 function lowerMsgs(data) {
     const lower = data.lowerPriceyh
     const lowerDate = dateFormat(data.lowerDateyh)
-    const lowerMsg = "历史最低到手价:   ¥" + String(lower) + "   " + lowerDate
+    const lowerMsg = "〽️ 历史最低到手价:   ¥" + String(lower) + "   " + lowerDate
     const curret_msg = (data.currentPriceStatus ? "   当前价格" + data.currentPriceStatus : "") + "   (仅供参考)"
     const lower1 = lowerMsg + curret_msg
-    const lower2 = "历史最低¥" + String(lower)
-    return [lower1, lower2]
-}
-
-function historyItems(data) {
-    const rexMatch = /\[.*?\]/g;
-    const rexExec = /\[(.*),(.*),"(.*)"\]/;
-    const list = data.jiagequshiyh.match(rexMatch);
-    let tbitems = [];
-    let startDate = "";
-    let endDate = "";
-    list.reverse().forEach((item, index) => {
-        if (item.length > 0) {
-            const result = rexExec.exec(item);
-            const dateUTC = new Date(eval(result[1]));
-            const date = dateUTC.format("yyyy-MM-dd");
-            if (index == 0) {
-                endDate = date;
-            }
-            if (index == list.length - 1) {
-                startDate = date;
-            }
-            let price = result[2];
-            price = "¥" + String(parseFloat(price));
-            const msg = date + getSpace(50 - date.length) + price;
-            tbitem = {
-                icon: "https://s2.ax1x.com/2020/01/03/lU2AYD.png",
-                title: msg
-            }
-            tbitems.push(tbitem);
-        }
-    });
-    const dateMsg = `(${startDate} ~ ${endDate})`;
-    return [dateMsg, tbitems];
+    return lower1
 }
 
 function dateFormat(cellval) {
@@ -140,43 +80,6 @@ function dateFormat(cellval) {
     const month = date.getMonth() + 1 < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
     const currentDate = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
     return date.getFullYear() + "-" + month + "-" + currentDate;
-}
-
-function getSpace(length) {
-    let blank = "";
-    for (let index = 0; index < length; index++) {
-        blank += " ";
-    }
-    return blank;
-}
-
-function customItem() {
-    return {
-        icon: "https://s2.ax1x.com/2020/01/03/lU2Pw6.png",
-        title: "历史价格",
-        desc: ""
-    }
-}
-
-function customTradeConsumerProtection() {
-    return {
-        "tradeConsumerService": {
-            "service": {
-                "items": [
-                ],
-                "icon": "",
-                "title": "基础服务"
-            },
-            "nonService": {
-                "items": [
-                ],
-                "title": "其他"
-            }
-        },
-        "passValue": "all",
-        "url": "https://h5.m.taobao.com/app/detailsubpage/consumer/index.js",
-        "type": "0"
-    }
 }
 
 Array.prototype.insert = function (index, item) {
@@ -215,75 +118,41 @@ Date.prototype.format = function (fmt) {
 function tool() {
     const isSurge = typeof $httpClient != "undefined"
     const isQuanX = typeof $task != "undefined"
-    const isResponse = typeof $response != "undefined"
-    const node = (() => {
-        if (typeof require == "function") {
-            const request = require('request')
-            return ({ request })
-        } else {
-            return (null)
-        }
-    })()
     const notify = (title, subtitle, message) => {
         if (isQuanX) $notify(title, subtitle, message)
         if (isSurge) $notification.post(title, subtitle, message)
-        if (node) console.log(JSON.stringify({ title, subtitle, message }));
     }
-    const write = (value, key) => {
+    const setCache = (value, key) => {
         if (isQuanX) return $prefs.setValueForKey(value, key)
         if (isSurge) return $persistentStore.write(value, key)
     }
-    const read = (key) => {
+    const getCache = (key) => {
         if (isQuanX) return $prefs.valueForKey(key)
         if (isSurge) return $persistentStore.read(key)
-    }
-    const adapterStatus = (response) => {
-        if (response) {
-            if (response.status) {
-                response["statusCode"] = response.status
-            } else if (response.statusCode) {
-                response["status"] = response.statusCode
-            }
-        }
-        return response
     }
     const get = (options, callback) => {
         if (isQuanX) {
             if (typeof options == "string") options = { url: options }
             options["method"] = "GET"
             $task.fetch(options).then(response => {
-                callback(null, adapterStatus(response), response.body)
+                response["status"] = response.statusCode
+                callback(null, response, response.body)
             }, reason => callback(reason.error, null, null))
         }
-        if (isSurge) $httpClient.get(options, (error, response, body) => {
-            callback(error, adapterStatus(response), body)
-        })
-        if (node) {
-            node.request(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
+        if (isSurge) $httpClient.get(options, callback)
     }
     const post = (options, callback) => {
         if (isQuanX) {
             if (typeof options == "string") options = { url: options }
             options["method"] = "POST"
             $task.fetch(options).then(response => {
-                callback(null, adapterStatus(response), response.body)
+                response["status"] = response.statusCode
+                callback(null, response, response.body)
             }, reason => callback(reason.error, null, null))
         }
-        if (isSurge) {
-            $httpClient.post(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
-        if (node) {
-            node.request.post(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
+        if (isSurge) $httpClient.post(options, callback)
     }
-    return { isQuanX, isSurge, isResponse, notify, write, read, get, post }
+    return { isQuanX, isSurge, notify, setCache, getCache, get, post }
 }
 
 function Base64() {
