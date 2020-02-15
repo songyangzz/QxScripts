@@ -58,7 +58,8 @@ function priceSummary(data) {
     let summary = ""
     let listPriceDetail = data.PriceRemark.ListPriceDetail
     listPriceDetail.pop()
-    listPriceDetail.forEach((item, index) => {
+    let list = listPriceDetail.concat(historySummary(data.single))
+    list.forEach((item, index) => {
         if (index == 2) {
             item.Name = "双十一价格"
         } else if (index == 3) {
@@ -68,9 +69,6 @@ function priceSummary(data) {
         }
         summary += `\n${item.Name}   ${item.Price}   ${item.Date}   ${item.Difference}`
     })
-    historySummary(data.single).forEach((item) => {
-        summary += `\n${item.Name}   ${item.Price}   ${item.Date}   ${item.Difference}`
-    });
     return summary
 }
 
@@ -135,7 +133,7 @@ function requestPrice(share_url, callback) {
             "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 - mmbWebBrowse - ios"
         },
-        body: "methodName=getHistoryTrend&p_url=" + encodeURIComponent("http://m.manmanbuy.com/redirect.aspx?webid=1&tourl=" + share_url)
+        body: "methodName=getHistoryTrend&p_url=" + encodeURIComponent(share_url)
     }
     $tool.post(options, function (error, response, data) {
         if (!error) {
