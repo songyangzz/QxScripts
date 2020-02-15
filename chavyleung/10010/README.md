@@ -15,7 +15,7 @@ act.10010.com
 [Script]
 # 注意获取Cookie有两条脚本
 http-request ^https:\/\/act.10010.com\/SigninApp\/signin\/querySigninActivity.htm script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/10010/10010.cookie.js
-http-request ^https:\/\/act.10010.com\/SigninApp\/signin\/daySign.do script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/10010/10010.cookie.js
+http-request ^https:\/\/act.10010.com\/SigninApp(.*?)\/signin\/daySign.do script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/10010/10010.cookie.js
 cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/10010/10010.js
 ```
 
@@ -28,7 +28,7 @@ act.10010.com
 [rewrite_local]
 # 注意获取Cookie有两条脚本
 ^https:\/\/act.10010.com\/SigninApp\/signin\/querySigninActivity.htm url script-request-header 10010.cookie.js
-^https:\/\/act.10010.com\/SigninApp\/signin\/daySign.do url script-request-header 10010.cookie.js
+^https:\/\/act.10010.com\/SigninApp(.*?)\/signin\/daySign.do url script-request-header 10010.cookie.js
 
 [task_local]
 1 0 * * * 10010.js

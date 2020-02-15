@@ -31,7 +31,7 @@ QX or Surge MITM = api.m.jd.com
 */
 
 var log = true; //是否开启日志, false则关闭
-var stop = 2000; //自定义延迟签到,单位毫秒,(如填200则每个接口延迟0.2秒执行),默认无延迟
+var stop = 3000; //自定义延迟签到,单位毫秒,(如填200则每个接口延迟0.2秒执行),默认无延迟
 var $nobyda = nobyda();
 var KEY = $nobyda.read("CookieJD");
 
