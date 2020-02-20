@@ -8,8 +8,8 @@ Due to the validity of cookie, if the script pops up a notification of cookie in
 Daily bonus script will be performed every day at 0:05 a.m. You can modify the execution time.
 If reprinted, please indicate the source. My TG channel @NobyDa
 
-Update 2020.2.13 21:00 v66 
-Effective number: 22
+Update 2020.2.20 0:05 v68
+Effective number: 21
 ~~~~~~~~~~~~~~~~
 Surge 4.0 :
 [Script]
@@ -761,8 +761,9 @@ function JDFlashSale(s) {
               merge.JDFSale.fail = 1
             } else {
               if (data.match(/(不存在|已结束|\"2008\")/)) {
-                merge.JDFSale.notify = "京东商城-闪购: 失败, 原因: 活动已结束 ⚠️"
+                merge.JDFSale.notify = "京东商城-闪购: 失败, 原因: 需瓜分&已结束 ⚠️"
                 merge.JDFSale.fail = 1
+                FlashSaleDivide(s)
               } else {
                 if (data.match(/(\"code\":\"3\"|\"1003\")/)) {
                   merge.JDFSale.notify = "京东商城-闪购: 失败, 原因: Cookie失效‼️"
@@ -778,6 +779,64 @@ function JDFlashSale(s) {
         resolve('done')
       } catch (eor) {
         $nobyda.notify("京东商城-闪购" + eor.name + "‼️", JSON.stringify(eor), eor.message)
+        resolve('done')
+      }
+    })}, s)
+  });
+}
+
+function FlashSaleDivide(s) {
+
+  return new Promise(resolve => { setTimeout(() => {
+    const Url = {
+      url: 'https://api.m.jd.com/client.action?functionId=partitionJdShare',
+      headers: {
+        Cookie: KEY,
+      },
+      body: "body=%7B%7D&client=apple&clientVersion=8.5.0&d_brand=apple&openudid=1fce88cd05c42fe2b054e846f11bdf33f016d676&sign=958ba0e805094b4b0f6216e86190ab51&st=1582042405636&sv=120&wifiBssid=unknown"
+    };
+
+    $nobyda.post(Url, function(error, response, data) {
+      try {
+        if (error) {
+          merge.JDFSale.notify += "\n京东闪购-瓜分: 签到接口请求失败 ‼️‼️"
+          merge.JDFSale.fail += 1
+        } else {
+          const cc = JSON.parse(data)
+          if (cc.result.code == 0) {
+            if (log) console.log("京东闪购-瓜分签到成功response: \n" + data)
+            if (data.match(/(\"jdBeanNum\":\d+)/)) {
+              merge.JDFSale.notify += "\n京东闪购-瓜分: 成功, 明细: " + cc.result.jdBeanNum + "京豆 🐶"
+              merge.JDFSale.bean = cc.result.jdBeanNum
+              merge.JDFSale.success = 1
+            } else {
+              merge.JDFSale.notify += "\n京东闪购-瓜分: 成功, 明细: 无京豆 🐶"
+              merge.JDFSale.success = 1
+            }
+          } else {
+            if (log) console.log("京东闪购-瓜分签到失败response: \n" + data)
+            if (data.match(/(已参与|已领取|\"2006\")/)) {
+              merge.JDFSale.notify += "\n京东闪购-瓜分: 失败, 原因: 已瓜分 ⚠️"
+              merge.JDFSale.fail += 1
+            } else {
+              if (data.match(/(不存在|已结束|\"2008\")/)) {
+                merge.JDFSale.notify += "\n京东闪购-瓜分: 失败, 原因: 活动已结束 ⚠️"
+                merge.JDFSale.fail += 1
+              } else {
+                if (data.match(/(\"code\":\"1003\"|未获取)/)) {
+                  merge.JDFSale.notify += "\n京东闪购-瓜分: 失败, 原因: Cookie失效‼️"
+                  merge.JDFSale.fail += 1
+                } else {
+                  merge.JDFSale.notify += "\n京东闪购-瓜分: 失败, 原因: 未知 ⚠️"
+                  merge.JDFSale.fail += 1
+                }
+              }
+            }
+          }
+        }
+        resolve('done')
+      } catch (eor) {
+        $nobyda.notify("京东闪购-瓜分" + eor.name + "‼️", JSON.stringify(eor), eor.message)
         resolve('done')
       }
     })}, s)
@@ -978,7 +1037,7 @@ function JingDongClean(s) {
       headers: {
         Cookie: KEY,
       },
-      body: "body=%7B%22riskParam%22%3A%7B%22eid%22%3A%22O5X6JYMZTXIEX4VBCBWEM5PTIZV6HXH7M3AI75EABM5GBZYVQKRGQJ5A2PPO5PSELSRMI72SYF4KTCB4NIU6AZQ3O6C3J7ZVEP3RVDFEBKVN2RER2GTQ%22%2C%22shshshfpb%22%3A%22v1%5C%2FzMYRjEWKgYe%2BUiNwEvaVlrHBQGVwqLx4CsS9PH1s0s0Vs9AWk%2B7vr9KSHh3BQd5NTukznDTZnd75xHzonHnw%3D%3D%22%2C%22pageClickKey%22%3A%22Babel_Sign%22%2C%22childActivityUrl%22%3A%22-1%22%7D%2C%22url%22%3A%22%22%2C%22params%22%3A%22%7B%5C%22enActK%5C%22%3A%5C%22HvENi4DscTLaP0AcMuJcj8znpSOv6847H9NkrtycVlIaZs%5C%2Fn4coLNw%3D%3D%5C%22%2C%5C%22isFloatLayer%5C%22%3Afalse%2C%5C%22ruleSrv%5C%22%3A%5C%2200561054_29747880_t1%5C%22%2C%5C%22signId%5C%22%3A%5C%2231CgSud60mEaZs%5C%2Fn4coLNw%3D%3D%5C%22%7D%22%2C%22geo%22%3A%7B%22lng%22%3A%220.000000%22%2C%22lat%22%3A%220.000000%22%7D%7D&client=apple&clientVersion=8.5.0&d_brand=apple&openudid=1fce88cd05c42fe2b054e846f11bdf33f016d676&sign=cb5945883dc459336f107d30e6abc60f&st=1581531991265&sv=121"
+      body: "body=%7B%22riskParam%22%3A%7B%22eid%22%3A%22O5X6JYMZTXIEX4VBCBWEM5PTIZV6HXH7M3AI75EABM5GBZYVQKRGQJ5A2PPO5PSELSRMI72SYF4KTCB4NIU6AZQ3O6C3J7ZVEP3RVDFEBKVN2RER2GTQ%22%2C%22shshshfpb%22%3A%22v1%5C%2FzMYRjEWKgYe%2BUiNwEvaVlrHBQGVwqLx4CsS9PH1s0s0Vs9AWk%2B7vr9KSHh3BQd5NTukznDTZnd75xHzonHnw%3D%3D%22%2C%22pageClickKey%22%3A%22Babel_Sign%22%2C%22childActivityUrl%22%3A%22-1%22%7D%2C%22url%22%3A%22%22%2C%22params%22%3A%22%7B%5C%22enActK%5C%22%3A%5C%22dxM%5C%2F5UMksObRQPpaTd%2BrRGsRbKEj%2Bd5zbnktSoBVv5gaZs%5C%2Fn4coLNw%3D%3D%5C%22%2C%5C%22isFloatLayer%5C%22%3Afalse%2C%5C%22ruleSrv%5C%22%3A%5C%2200561054_29968012_t1%5C%22%2C%5C%22signId%5C%22%3A%5C%22MifsBP86vK0aZs%5C%2Fn4coLNw%3D%3D%5C%22%7D%22%2C%22geo%22%3A%7B%22lng%22%3A%220.000000%22%2C%22lat%22%3A%220.000000%22%7D%7D&client=apple&clientVersion=8.5.0&d_brand=apple&d_model=iPhone8%2C2&openudid=1fce88cd05c42fe2b054e846f11bdf33f016d676&scope=11&sign=7b1972afa4b900455ae127928a50b4cf&st=1582128367289&sv=111"
     };
 
     $nobyda.post(JDCUUrl, function(error, response, data) {
