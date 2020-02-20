@@ -148,13 +148,8 @@ if (isSurge) {
 //#endregion
 
 let master = () => {
-
     if (typeof $request != "undefined") {
-        
-        
-
         getCookie();
-         $done({});
     } else {
         execute();
     }
@@ -224,7 +219,7 @@ let getCookie = () => {
                     $notify(`更新 ${config.name} 失败!!!`, "", "");
                 }
             } else {
-                console.log(` ${config.name} Cookie未改变`);
+                //cookie未发生变化,不执行更新
             }
         } else {
             if ($prefs.setValueForKey(newVal, config.cookie)) {
@@ -239,14 +234,9 @@ let getCookie = () => {
 
     //#region 正式开始写入cookie
     let request = $request;
-    
-   
-    var isValidRequest = request && request.headers 
+    var isValidRequest = request && request.headers && request.headers.Cookie
     if (isValidRequest) {
         let headers = request.headers;
-        
-        
-    
         // console.log(`【Cookie触发】${headers.Host}-${headers.Cookie}`)
         //#region 百度贴吧-H5
         if (headers.Host == config.baidu_tieba_h5.Host) {
@@ -267,17 +257,12 @@ let getCookie = () => {
                 updateCookie(config.baidu_tieba_app, headerCookie);
             }
         }
-        
-        
         //#endregion
         //#region 爱奇艺-APP
         if (headers.Host == config.iqiyi_app.Host) {
-        
-        
             var regex = /authcookie=([A-Za-z0-9]+)/;
             if (regex.test(request.url)) {
                 var headerCookie = regex.exec(request.url)[1];
-            
                 updateCookie(config.iqiyi_app, headerCookie);
             }
         }
@@ -940,7 +925,7 @@ let execute = () => {
         }
         let prize = () => {
             config.eleme.data.notify = `[${config.eleme.name}] 签到成功🎉`;
-            config.eleme.provider.prize.url += `${eleUserId}/sign_in/deily/prize`;
+            config.eleme.provider.prize.url += `${eleUserId}/sign_in/daily/prize`;
             $task.fetch(config.eleme.provider.prize).then(resp => {
                 let result = JSON.parse(resp.body);
                 if (result.message) {

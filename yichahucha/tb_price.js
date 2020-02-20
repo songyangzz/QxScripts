@@ -2,7 +2,7 @@
 README：https://github.com/yichahucha/surge/tree/master
  */
 
-const $tool = tool()
+const $tool = new Tool()
 const $base64 = new Base64()
 const consoleLog = false
 const url = $request.url
@@ -32,41 +32,46 @@ if (url.indexOf(path2) != -1) {
     let obj = JSON.parse(body)
     let apiStack = obj.data.apiStack[0]
     let value = JSON.parse(apiStack.value)
+    let tradeConsumerProtection = null
     if (value.global) {
-        let tradeConsumerProtection = value.global.data.tradeConsumerProtection
+        tradeConsumerProtection = value.global.data.tradeConsumerProtection
         if (!tradeConsumerProtection) {
             value.global.data["tradeConsumerProtection"] = customTradeConsumerProtection()
+            tradeConsumerProtection = value.global.data.tradeConsumerProtection
         }
-        tradeConsumerProtection = value.global.data.tradeConsumerProtection
-        let service = tradeConsumerProtection.tradeConsumerService.service
-        let nonService = tradeConsumerProtection.tradeConsumerService.nonService
-
-        let item = obj.data.item
-        let shareUrl = `https://item.taobao.com/item.htm?id=${item.itemId}`
-
-        requestPrice(shareUrl, function (data) {
-            if (data) {
-                if (data.ok == 1 && data.single) {
-                    const lower = lowerMsgs(data.single)
-                    const tbitems = priceSummary(data)
-                    const tip = data.PriceRemark.Tip
-                    service.items = service.items.concat(nonService.items)
-                    service.items.unshift(customItem(lower[1], `${lower[0]} ${tip}` + "（仅供参考）"))
-                    nonService.title = "价格详情"
-                    nonService.items = tbitems
-                }
-                if (data.ok == 0 && data.msg.length > 0) {
-                    service.items.unshift(customItem("历史价格", data.msg))
-                }
-                apiStack.value = JSON.stringify(value)
-                $done({ body: JSON.stringify(obj) })
-            } else {
-                $done({ body })
-            }
-        })
     } else {
-        $done({ body })
+        tradeConsumerProtection = value.tradeConsumerProtection
+        if (!tradeConsumerProtection) {
+            value["tradeConsumerProtection"] = customTradeConsumerProtection()
+            tradeConsumerProtection = value.tradeConsumerProtection
+        }
     }
+    let service = tradeConsumerProtection.tradeConsumerService.service
+    let nonService = tradeConsumerProtection.tradeConsumerService.nonService
+
+    let item = obj.data.item
+    let shareUrl = `https://item.taobao.com/item.htm?id=${item.itemId}`
+
+    requestPrice(shareUrl, function (data) {
+        if (data) {
+            if (data.ok == 1 && data.single) {
+                const lower = lowerMsgs(data.single)
+                const tbitems = priceSummary(data)
+                const tip = data.PriceRemark.Tip
+                service.items = service.items.concat(nonService.items)
+                service.items.unshift(customItem(lower[1], `${lower[0]} ${tip}` + "（仅供参考）"))
+                nonService.title = "价格详情"
+                nonService.items = tbitems
+            }
+            if (data.ok == 0 && data.msg.length > 0) {
+                service.items.unshift(customItem("历史价格", data.msg))
+            }
+            apiStack.value = JSON.stringify(value)
+            $done({ body: JSON.stringify(obj) })
+        } else {
+            $done({ body })
+        }
+    })
 }
 
 function lowerMsgs(data) {
@@ -91,7 +96,7 @@ function priceSummary(data) {
         } else if (index == 4) {
             item.Name = "三十天最低"
         }
-        summary = `${item.Name}${getSpace(10)}${item.Price}${getSpace(10)}${item.Date}`
+        summary = `${item.Name}${getSpace(4)}${item.Price}${getSpace(4)}${item.Date}${getSpace(4)}${item.Difference}`
         tbitems.push(customItem(summary))
     })
     return tbitems
@@ -163,10 +168,10 @@ function requestPrice(share_url, callback) {
     $tool.post(options, function (error, response, data) {
         if (!error) {
             callback(JSON.parse(data));
-            if (consolelog) console.log("Data:\n" + data);
+            if (consoleLog) console.log("Data:\n" + data);
         } else {
             callback(null, null);
-            if (consolelog) console.log("Error:\n" + error);
+            if (consoleLog) console.log("Error:\n" + error);
         }
     })
 }
@@ -248,11 +253,8 @@ Date.prototype.format = function (fmt) {
     return fmt;
 }
 
-function tool() {
-    const isSurge = typeof $httpClient != "undefined"
-    const isQuanX = typeof $task != "undefined"
-    const isResponse = typeof $response != "undefined"
-    const node = (() => {
+function Tool() {
+    _node = (() => {
         if (typeof require == "function") {
             const request = require('request')
             return ({ request })
@@ -260,20 +262,43 @@ function tool() {
             return (null)
         }
     })()
-    const notify = (title, subtitle, message) => {
-        if (isQuanX) $notify(title, subtitle, message)
-        if (isSurge) $notification.post(title, subtitle, message)
-        if (node) console.log(JSON.stringify({ title, subtitle, message }));
+    _isSurge = typeof $httpClient != "undefined"
+    _isQuanX = typeof $task != "undefined"
+    this.isSurge = _isSurge
+    this.isQuanX = _isQuanX
+    this.isResponse = typeof $response != "undefined"
+    this.notify = (title, subtitle, message) => {
+        if (_isQuanX) $notify(title, subtitle, message)
+        if (_isSurge) $notification.post(title, subtitle, message)
+        if (_node) console.log(JSON.stringify({ title, subtitle, message }));
     }
-    const write = (value, key) => {
-        if (isQuanX) return $prefs.setValueForKey(value, key)
-        if (isSurge) return $persistentStore.write(value, key)
+    this.write = (value, key) => {
+        if (_isQuanX) return $prefs.setValueForKey(value, key)
+        if (_isSurge) return $persistentStore.write(value, key)
     }
-    const read = (key) => {
-        if (isQuanX) return $prefs.valueForKey(key)
-        if (isSurge) return $persistentStore.read(key)
+    this.read = (key) => {
+        if (_isQuanX) return $prefs.valueForKey(key)
+        if (_isSurge) return $persistentStore.read(key)
     }
-    const adapterStatus = (response) => {
+    this.get = (options, callback) => {
+        if (_isQuanX) {
+            if (typeof options == "string") options = { url: options }
+            options["method"] = "GET"
+            $task.fetch(options).then(response => { callback(null, _status(response), response.body) }, reason => callback(reason.error, null, null))
+        }
+        if (_isSurge) $httpClient.get(options, (error, response, body) => { callback(error, _status(response), body) })
+        if (_node) _node.request(options, (error, response, body) => { callback(error, _status(response), body) })
+    }
+    this.post = (options, callback) => {
+        if (_isQuanX) {
+            if (typeof options == "string") options = { url: options }
+            options["method"] = "POST"
+            $task.fetch(options).then(response => { callback(null, _status(response), response.body) }, reason => callback(reason.error, null, null))
+        }
+        if (_isSurge) $httpClient.post(options, (error, response, body) => { callback(error, _status(response), body) })
+        if (_node) _node.request.post(options, (error, response, body) => { callback(error, _status(response), body) })
+    }
+    _status = (response) => {
         if (response) {
             if (response.status) {
                 response["statusCode"] = response.status
@@ -283,43 +308,6 @@ function tool() {
         }
         return response
     }
-    const get = (options, callback) => {
-        if (isQuanX) {
-            if (typeof options == "string") options = { url: options }
-            options["method"] = "GET"
-            $task.fetch(options).then(response => {
-                callback(null, adapterStatus(response), response.body)
-            }, reason => callback(reason.error, null, null))
-        }
-        if (isSurge) $httpClient.get(options, (error, response, body) => {
-            callback(error, adapterStatus(response), body)
-        })
-        if (node) {
-            node.request(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
-    }
-    const post = (options, callback) => {
-        if (isQuanX) {
-            if (typeof options == "string") options = { url: options }
-            options["method"] = "POST"
-            $task.fetch(options).then(response => {
-                callback(null, adapterStatus(response), response.body)
-            }, reason => callback(reason.error, null, null))
-        }
-        if (isSurge) {
-            $httpClient.post(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
-        if (node) {
-            node.request.post(options, (error, response, body) => {
-                callback(error, adapterStatus(response), body)
-            })
-        }
-    }
-    return { isQuanX, isSurge, isResponse, notify, write, read, get, post }
 }
 
 function Base64() {
