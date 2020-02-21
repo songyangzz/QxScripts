@@ -13,7 +13,7 @@ let config = {
     show: {
         //普通每天的
         template: {
-            title: `[黄村公园] $[summary]`,
+            title: `[大兴区清源路] $[summary]`,
     subtitle: ``,
     detail: `$[hourly($[month]/$[day] - $[hour]:00 •  $[weather] | $[apparentTemperatureMin]~$[apparentTemperatureMax]°C • 🌧️$[precipProbability])]`
 },

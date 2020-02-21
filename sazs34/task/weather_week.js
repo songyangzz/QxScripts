@@ -12,7 +12,7 @@ let config = {
     timeout: 0, //超时时间,单位毫秒(1000毫秒=1秒),一般不推荐修改[为0则不限制超时时间]
     show: {
         template: {
-            title: `[黄村公园]  •  $[summary]`,
+            title: `[大兴区清源路]  •  $[summary]`,
             subtitle: `$[weatherIcon]$[weather] $[temperatureMin] ~ $[temperatureMax]°C   •   ☔️降雨概率 $[precipProbability]%`,
             detail: `🥵空气质量 $[aqi]($[aqiDesc])   •  🌬风速$[windSpeed]km/h $[windDir]
 👀紫外线指数 $[uv]($[uvDesc])   •  💦湿度$[currentHumidity]%
