@@ -32,13 +32,19 @@ hostname = api.m.jd.com
 
 Display taobao historical price
 ```
-# 不生效或失效的需要卸载 tb 重装，注意不开脚本进 tb 会失效
+# 不生效或失效的需要卸载 tb 重装，注意不开脚本进 tb 大概率会失效
 [Script]
-http-response ^https?://(trade-acs|amdc)\.m\.taobao\.com/(gw/mtop\.taobao\.detail\.getdetail|amdc/mobileDispatch) requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price.js
-# lite
-# http-response ^https?://(trade-acs|amdc)\.m\.taobao\.com/(gw/mtop\.taobao\.detail\.getdetail|amdc/mobileDispatch) requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price_lite.js
+http-request ^https?://.+/amdc/mobileDispatch requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price.js
+http-response ^https?://trade-acs\.m\.taobao\.com/gw/mtop\.taobao\.detail\.getdetail requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price.js
 [MITM]
 hostname = trade-acs.m.taobao.com,amdc.m.taobao.com
+
+# 以上还不生效或者频繁失效的可以添加以下规则，使用规则有可能误伤其他功能或者应用（一般不需要添加规则就能正常使用）
+# [Rule]
+# IP-CIDR, 203.119.144.0/23, REJECT, no-resolve
+# IP-CIDR, 203.119.175.0/24, REJECT, no-resolve
+# IP-CIDR, 106.11.162.0/24, REJECT, no-resolve
+# IP-CIDR, 47.102.83.0/24, REJECT, no-resolve
 ```
 
 Daily work check-in reminder
@@ -79,13 +85,22 @@ hostname = api.m.jd.com
 
 Display taobao historical price
 ```
-# 不生效或失效的需要卸载 tb 重装，注意不开脚本进 tb 会失效
+# 不生效或失效的需要卸载 tb 重装，注意不开脚本进 tb 大概率会失效
 [rewrite_local]
+# 1.0.5（商店版）
 ^https?://(trade-acs|amdc)\.m\.taobao\.com/(gw/mtop\.taobao\.detail\.getdetail|amdc/mobileDispatch) url script-response-body tb_price.js
-# lite
-# ^https?://(trade-acs|amdc)\.m\.taobao\.com/(gw/mtop\.taobao\.detail\.getdetail|amdc/mobileDispatch) url script-response-body tb_price_lite.js
+# 1.0.6（TF版）
+^https?://.+/amdc/mobileDispatch url script-request-body tb_price.js
+^https?://trade-acs\.m\.taobao\.com/gw/mtop\.taobao\.detail\.getdetail url script-response-body tb_price.js
 [mitm]
 hostname = trade-acs.m.taobao.com,amdc.m.taobao.com
+
+# 以上还不生效或者频繁失效的可以添加以下规则，使用规则有可能误伤其他功能或者应用（一般不需要添加规则就能正常使用）
+# [filter_local]
+# ip-cidr, 203.119.144.0/23, reject
+# ip-cidr, 203.119.175.0/24, reject
+# ip-cidr, 106.11.162.0/24, reject
+# ip-cidr, 47.102.83.0/24, reject
 ```
 
 Daily work check-in reminder
