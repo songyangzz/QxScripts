@@ -1,24 +1,9 @@
 /*
 JingDong daily bonus, Multiple in one scripts
 
-<<<<<<< master
-<<<<<<< master
-Description :
-When using for the first time. Need to manually log in to the https://bean.m.jd.com checkin to get cookie. If notification gets cookie success, you can use the check in script.
-Due to the validity of cookie, if the script pops up a notification of cookie invalidation in the future, you need to repeat the above steps.
-
-Daily bonus script will be performed every day at 0:05 a.m. You can modify the execution time.
-If reprinted, please indicate the source. My TG channel @NobyDa
-
-Update 2020.2.20 0:05 v68
-Effective number: 21
-~~~~~~~~~~~~~~~~
-Surge 4.0 :
-=======
 更新于: 2020.2.25 23:00 v72
 =======
 更新于: 2020.2.27 17:30 v73
->>>>>>> origin/master
 有效接口: 21
 
 该脚本同时兼容: QuantumultX, Surge, Loon, JSBox, Node.js
@@ -556,12 +541,9 @@ function JingDongShake(s) {
                 merge.JDShake.fail = 1
               }
             }
-<<<<<<< master
-=======
             if (cc.data.luckyBox.freeTimes != 0) {
               JingDongShake(s)
             }
->>>>>>> origin/master
           } else {
             if (log) console.log("京东商城-摇一摇签到失败response: \n" + data)
             if (data.match(/true/)) {
