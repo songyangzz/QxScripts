@@ -14,19 +14,26 @@ server=8.8.4.4
 
 
 [policy]
-static=Fake iAP 1, proxy, reject, direct
+available=Fake iAP Policy, Fake iAP Server 01, Fake iAP Server 02, Fake iAP Server 03, img-url=https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/240/apple/237/pill_1f48a.png
+static=Fake PXX Policy, direct, Fake iAP Policy, img-url=https://raw.githubusercontent.com/crossutility/Quantumult-X/master/icon-samples/apple.PNG
+
+#
+# Params "tag" and "enabled" are optional.
+# The default sync interval for all kinds of remote resources is 24*60*60 seconds.
+#
 
 [server_remote]
-https://github.com/tinycarrot/tinycarrot/raw/master/quantumutlx/remote/fakeiap_server.txt, tag=Fake iAP Server 1, enabled=true
+https://github.com/tinycarrot/tinycarrot/raw/master/quantumutlx/remote/fakeiap_server.txt, tag=Fake iAP Server, enabled=true
 
 [filter_remote]
-https://raw.githubusercontent.com/tinycarrot/tinycarrot/master/Profile/quantumult/fakePXX-itunes.txt, tag=Fake PXX, force-policy=proxy, enabled=false
-https://raw.githubusercontent.com/tinycarrot/tinycarrot/master/Profile/quantumult/fakeiap-filter.txt, tag=Fake iAP 1, force-policy=proxy, enabled=false
-https://raw.githubusercontent.com/bigdargon/hostsVN/master/option/hostsVN-quantumult-rule.conf, tag=hostvn, force-policy=reject, enabled=true
+https://raw.githubusercontent.com/tinycarrot/tinycarrot/master/Profile/quantumult/fakePXX-itunes.txt, tag=Fake PXX Filter, force-policy=Fake PXX Policy, enabled=true
+https://raw.githubusercontent.com/tinycarrot/tinycarrot/master/Profile/quantumult/fakeiap-filter.txt, tag=Fake iAP Filter, force-policy=Fake iAP Policy, enabled=true
+https://raw.githubusercontent.com/bigdargon/hostsVN/master/option/hostsVN-quantumult-exceptions-rule.conf, tag=🇻🇳hostsVN, force-policy=direct, enabled=true
+https://raw.githubusercontent.com/bigdargon/hostsVN/master/option/hostsVN-quantumult-rule.conf, tag=🇻🇳hostsVN, force-policy=reject, enabled=true
 
 [rewrite_remote]
 https://raw.githubusercontent.com/langkhach270389/Scripting/master/QuantumultX/Fake_Vip.txt, tag=Fakevip, enabled=false
-https://raw.githubusercontent.com/bigdargon/hostsVN/master/option/hostsVN-quantumultX-rewrite.conf, tag=HostVn, enabled=true
+https://raw.githubusercontent.com/bigdargon/hostsVN/master/option/hostsVN-quantumultX-rewrite.conf, tag=🇻🇳hostsVN, enabled=true
 
 [server_local]
 
@@ -70,7 +77,7 @@ skip_validating_cert = true
 force_sni_domain_name = true
 ;empty_sni_enabled = true
 
-hostname = avatar-nct.nixcdn.com, spclient.wg.spotify.com, *.googlevideo.com, oa.zalo.me, vsco.co, api.gyrosco.pe, origin-prod-phoenix.jibjab.com, api.termius.com, api.picsart.c*, api.meiease.c*, api.unfold.app, viva-asia1.vvbrd.com, graph.nhaccuatui.com, api.memrise.com , buy.itunes.apple.com, api.sync.me, pool.elsanow.io, lambda.us-east-1.amazonaws.com, api.mondlylanguages.com, api.busuu.com, owa.videoshowiosglobalserver.com:0, accounts.elevateapp.net, purchases.ws.pho.to, api-intl.mr.meitu.com, bmall.camera360.com, api.tv.zing.vn, api.calm.com, www.calm.com, api.global.mp3.zing.vn, apimboom2.globaldelight.net, photos.adobe.io, license.pdfexpert.com, subs.platforms.team, apic.musixmatch.com, api.getmimo.com, api.revenuecat.com, pixmagicapp.com, engbright.com, api.lingokids.com, www.peacefulsoundsapp.com, duolingo-leaderboards-prod.duolingo.com, commerce-i18n-api.faceu.mobi, mobi, mobile-api.adguard.com, api.blinkist.com, api.sololearn.com, receipts.cerebralgardens.com, api-kinemaster-assetstore.nexstreaming.com, api.pushover.net, api-cs.intsig.net, api.overhq.com, api.appsyscode.com, api.freeletics.com, api.shred.app, receipt-validator.herewetest.com, api.deezer.com, iap.aps-sdk.com, education.github.com, backend.getdrafts.com, ssl-api.itranslateapp.com, sk.ulysses.app, dayone.me, license.enpass.io, mp.bybutter.com, *.grammarly.com, splice.oracle.*.com, api.keepkeep.com, planner5d.com, secure.istreamer.com, www.api.monkeyuni.net,
+hostname = avatar-nct.nixcdn.com, spclient.wg.spotify.com, *.googlevideo.com, oa.zalo.me, vsco.co, api.gyrosco.pe, origin-prod-phoenix.jibjab.com, api.termius.com, api.picsart.c*, api.meiease.c*, api.unfold.app, viva-asia1.vvbrd.com, graph.nhaccuatui.com, api.memrise.com , buy.itunes.apple.com, api.sync.me, pool.elsanow.io, lambda.us-east-1.amazonaws.com, api.mondlylanguages.com, api.busuu.com, owa.videoshowiosglobalserver.com:0, accounts.elevateapp.net, purchases.ws.pho.to, api-intl.mr.meitu.com, bmall.camera360.com, api.tv.zing.vn, api.calm.com, www.calm.com, api.global.mp3.zing.vn, apimboom2.globaldelight.net, photos.adobe.io, license.pdfexpert.com, subs.platforms.team, apic.musixmatch.com, api.getmimo.com, api.revenuecat.com, pixmagicapp.com, engbright.com, api.lingokids.com, www.peacefulsoundsapp.com, duolingo-leaderboards-prod.duolingo.com, commerce-i18n-api.faceu.mobi, mobi, mobile-api.adguard.com, api.blinkist.com, api.sololearn.com, receipts.cerebralgardens.com, api-kinemaster-assetstore.*, api.pushover.net, api-cs.intsig.net, api.overhq.com, api.appsyscode.com, api.freeletics.com, api.shred.app, receipt-validator.herewetest.com, api.deezer.com, iap.aps-sdk.com, education.github.com, backend.getdrafts.com, ssl-api.itranslateapp.com, sk.ulysses.app, dayone.me, license.enpass.io, mp.bybutter.com, *.grammarly.com, splice.oracle.*.com, api.keepkeep.com, planner5d.com, secure.istreamer.com, www.api.monkeyuni.net,
 [rewrite_local]
 
 # vsco
@@ -188,10 +195,10 @@ https:\/\/api\.termius\.com\/api\/v3\/bulk\/account\/ url script-response-body l
 ^https:\/\/api\.blinkist\.com\/v4\/(me$|me.json$|me\/access$) url script-response-body langkhach/blinkist.js
 
 #sololearn 
-^https:\/\/api\.sololearn\.com\/(Profile\/GetProfile$|authenticateDevice$) url script-response-body langkhach/sololearn.js
+^https:\/\/api\.sololearn\.com\/(authenticateDevice|challenge\/GetContestFeed|Profile\/GetProfile)$ url script-response-body langkhach/sololearn.js
 
  #kinemaster
-^https:\/\/api-kinemaster-assetstore\.nexstreaming\.com\/.*\/product\/verifyReceipt$ url script-response-body langkhach/kinemaster.js
+^https:\/\/api-kinemaster-assetstore\.(nexstreaming|kinemasters)\.com\/.*\/product\/verifyReceipt$ url script-response-body langkhach/kinemaster.js
 
 #pushover
 ^https:\/\/api\.pushover\.net\/1\/messages\.json* url script-response-body langkhach/pushover.js
