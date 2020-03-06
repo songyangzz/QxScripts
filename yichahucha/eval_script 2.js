@@ -34,10 +34,6 @@ const __conf = String.raw`
 https://raw.githubusercontent.com/yichahucha/surge/master/sub_eval.conf
 
 
-<<<<<<< master
-
-=======
->>>>>>> origin/master
 [eval_local]
 // custom local...
 
@@ -55,10 +51,6 @@ const __tool = new ____Tool()
 const __isTask = __tool.isTask
 const __log = false
 const __debug = false
-<<<<<<< master
-const __emoji = "🪓"
-=======
->>>>>>> origin/master
 const __concurrencyLimit = 5
 
 if (__isTask) {
@@ -151,21 +143,12 @@ if (__isTask) {
                 })
                 .then((resultInfo) => {
                     const messages = resultInfo.message.split("\n")
-<<<<<<< master
-                    const detail = `${messages.slice(0, 25).join("\n")}${messages.length > 20 ? `\n${__emoji}......` : ""}`
-                    const summary = `Success: ${resultInfo.count.success}   Fail: ${resultInfo.count.fail}   Tasks: ${____timeDiff(begin, new Date())}s`
-                    const nowDate = `${new Date().Format("yyyy-MM-dd HH:mm:ss")} last update`
-                    const lastDate = __tool.read("ScriptLastUpdateDateKey")
-                    console.log(`${summary}\n${resultInfo.message}\n${lastDate ? lastDate : nowDate}`)
-                    __tool.notify("Update Done", summary, `${detail}\n${lastDate ? lastDate : nowDate}`)
-=======
                     const detail = `${messages.slice(0, __showLine).join("\n")}${messages.length > 20 ? `\n${__emoji}......` : ""}`
                     const summary = `${__emojiSuccess}Success: ${resultInfo.count.success}  ${__emojiFail}Fail: ${resultInfo.count.fail}   ${__emojiTasks}Tasks: ${____timeDiff(begin, new Date())}s`
                     const nowDate = `${new Date().Format("yyyy-MM-dd HH:mm:ss")} last update`
                     const lastDate = __tool.read("ScriptLastUpdateDateKey")
                     console.log(`${summary}\n${resultInfo.message}\n${lastDate ? lastDate : nowDate}`)
                     __tool.notify(`${__emojiDone}Update Done`, summary, `${detail}\n${__emoji}${lastDate ? lastDate : nowDate}`)
->>>>>>> origin/master
                     __tool.write(nowDate, "ScriptLastUpdateDateKey")
                     $done()
                 })
