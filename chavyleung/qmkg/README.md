@@ -1,49 +1,51 @@
-# 喜马拉雅
+# 全民K歌
 
 > 代码已同时兼容 Surge & QuanX, 使用同一份签到脚本即可
 
-> 2020.1.9 部分场景不能获取 Cookie 请更换匹配正则
+> QuanX 需要: v1.0.6-build195 及以后版本 (TestFlight)
 
-> 2020.1.11 QuanX 在`190`版本开始, 获取 Cookie 方式需要从`script-response-body`改为`script-request-header`
-
-> 2020.3.9 增加自动执行每日`浏览发现页`任务 (更新脚本即可, 无需重新获取 cookike)
+> 感谢 [@GideonSenku](https://github.com/GideonSenku) Commit
 
 ## 配置 (Surge)
 
 ```properties
 [MITM]
-mobwsa.ximalaya.com
+node.kg.qq.com
 
 [Script]
-http-request ^https?:\/\/.*\/mobile\-user\/homePage\/.* script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/ximalaya/ximalaya.cookie.js
-cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/ximalaya/ximalaya.js
+http-request ^https://node\.kg\.qq\.com/webapp/proxy? script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/qmkg/qmkg.cookie.js, requires-body=true
+
+cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/qmkg/qmkg.js
 ```
 
 ## 配置 (QuanX)
 
 ```properties
 [MITM]
-mobwsa.ximalaya.com
+node.kg.qq.com
 
 [rewrite_local]
-# 189及以前版本
-^https?:\/\/.*\/mobile\-user\/homePage\/.* url script-response-body ximalaya.cookie.js
-# 190及以后版本
-^https?:\/\/.*\/mobile\-user\/homePage\/.* url script-request-header ximalaya.cookie.js
+
+# [商店版] QuanX v1.0.6-build194 及更早版本
+# 不支持
+
+# [TestFlight] QuanX v1.0.6-build195 及以后版本
+^https://node\.kg\.qq\.com/webapp/proxy? url script-request-body https://raw.githubusercontent.com/chavyleung/scripts/master/qmkg/qmkg.cookie.js
 
 [task_local]
-1 0 * * * ximalaya.js
+1 0 * * * qmkg.js
 ```
 
 ## 说明
 
-1. 先把`mobwsa.ximalaya.com`加到`[MITM]`
+1. 先把`node.kg.qq.com`加到`[MITM]`
 2. 再配置重写规则:
    - Surge: 把两条远程脚本放到`[Script]`
-   - QuanX: 把`ximalaya.cookie.js`和`ximalaya.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
-3. 打开 APP, 访问下右下角`账号`
-4. 系统提示: `获取Cookie: 成功` & `获取Token: 成功`（如果不提示获取成功, 尝试杀进程再进`账号`）
-5. 最后就可以把第 1 条脚本注释掉了
+   - QuanX: 把`qmkg.cookie.js`和`qmkg.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
+3. 打开 APP 手动签到一次: 访问下右下角 `我的` > `任务中心` > `签到`
+4. 系统提示: `获取Cookie: 成功`
+5. 把获取 Cookie 的脚本注释掉
+6. 运行一次脚本, 如果提示重复签到, 那就算成功了!
 
 > 第 1 条脚本是用来获取 cookie 的, 用浏览器访问一次获取 cookie 成功后就可以删掉或注释掉了, 但请确保在`登录成功`后再获取 cookie.
 
@@ -98,3 +100,5 @@ mobwsa.ximalaya.com
 [@lhie1](https://github.com/lhie1)
 
 [@ConnersHua](https://github.com/ConnersHua)
+
+[@GideonSenku](https://github.com/GideonSenku)
