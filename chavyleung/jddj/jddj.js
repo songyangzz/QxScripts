@@ -1,29 +1,32 @@
 const cookieName ='京东到家'
-const signurlKey = 'chen_signurl_jddj'
 const signheaderKey = 'chen_signheader_jddj'
 const chen = init()
-const signurlVal = chen.getdata(signurlKey)
 const signheaderVal = chen.getdata(signheaderKey)
 sign()
 function sign() {
-    let url = {url: signurlVal,headers: JSON.parse(signheaderVal)}
+    let url = {url: `https://daojia.jd.com/client?functionId=signin%2FuserSigninNew&body=%7B%7D`,headers: JSON.parse(signheaderVal)}
     chen.get(url, (error, response, data) => {
       chen.log(`${cookieName}, data: ${data}`)
       let res = JSON.parse(data)
       const title = `${cookieName}`
       let subTitle = ``
       let detail = ``
-      if (res.success&&res.result.points) {
+      if (res.success&&res.result.points!='undefined') {
         subTitle = `签到结果:成功`
         detail = `获取鲜豆：${res.result.points}`
-      } else if(res.success==false){
-        subTitle = `签到结果: 重复签到`
+      } else if(!res.success&&res.code==202){
+        subTitle = `签到结果: 失败`
         detail = `说明: ${res.msg}`
+      }
+      else if (!res.success&&res.code==-1){
+        subTitle = `签到成功,请勿重复操作`
+      }
+      else{
+        subTitle = `未知错误,截图日志`
       }
       chen.msg(title, subTitle, detail)
     })
-    chen.done()
-    }
+  }
 
   function init() {
     isSurge = () => {

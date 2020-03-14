@@ -1,18 +1,13 @@
 const cookieName = '京东到家'
-const signurlKey = 'chen_signurl_jddj'
 const signheaderKey = 'chen_signheader_jddj'
 const chen = init()
-const requrl = $request.url
-if ($request && $request.method != 'OPTIONS') {
-  const signurlVal = requrl
-  const signheaderVal = JSON.stringify($request.headers)
-  const flag = requrl.includes('functionId=signinuserSigninNew')
-  if (signurlVal&&signheaderVal&&flag) {
-    chen.setdata(signurlVal, signurlKey)
-    chen.setdata(signheaderVal, signheaderKey)
-    chen.msg(cookieName, `获取Cookie: 成功`, ``)
+  if (this.$request) {
+    const signheaderVal = JSON.stringify($request.headers)
+    if (signheaderVal) {
+      chen.setdata(signheaderVal, signheaderKey)
+      chen.msg(cookieName, `获取Cookie: 成功`, ``)
+    }
   }
-}
 function init() {
   isSurge = () => {
     return undefined === this.$httpClient ? false : true

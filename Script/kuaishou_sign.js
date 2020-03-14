@@ -3,21 +3,20 @@
 获取Cookie方法:
 1.将下方[rewrite_local]和[MITM]地址复制的相应的区域
 下，
-2.APP登陆账号后，点击'钱包',即可获取Cookie.
+2.APP登陆账号后，点击'红包',即可获取Cookie.
 
 仅测试Quantumult x，Surge、Loon自行测试
 by Macsuny
 感谢
 @Chavy
 @Nobyda
-本人为初学者，专业问题请向大佬请教
 ~~~~~~~~~~~~~~~~
 Surge 4.0 :
 [Script]
-cron "0 9 * * *" script-path=kuaishou-sign.js
+cron "0 9 * * *" script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/kuaishou_sign.js
 
 # 获取快手极速版 Cookie.
-http-request https:\/\/nebula\.kuaishou\.com\/rest\/n\/nebula\/activity\/earn\/overview,script-path=kuaishou-cookie.js
+http-request https:\/\/nebula\.kuaishou\.com\/rest\/n\/nebula\/activity\/earn\/overview,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/kuaishou_cookie.js
 ~~~~~~~~~~~~~~~~
 QX 1.0.5 :
 [task_local]
@@ -31,48 +30,63 @@ QX or Surge MITM = nebula.kuaishou.com
 ~~~~~~~~~~~~~~~~
 
 */
-const cookieName ='快手极速版'
+const cookieName = '快手极速版'
 const cookieKey = 'cookie_ks'
-const sy = init()
+const sy = init() 
+const title = `${cookieName}`
 const cookieVal = sy.getdata(cookieKey);
-sign()
+sign() 
 function sign() {
-    let url = {url:'https://nebula.kuaishou.com/rest/n/nebula/activity/earn/overview',
-    headers: {Cookie:cookieVal}}
-    url.headers['Connection'] = `keep-alive`
-    url.headers['Content-Type'] = `application/json;charset=UTF-8`
-    url.headers['Accept'] = `application/json, text/plain, */* `
-    url.headers['Host'] = `nebula.kuaishou.com`
-    url.headers['User-Agent'] = `Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ksNebula/2.1.3.65`
-    url.headers['Accept-Language'] = `zh-cn`
-    url.headers['Accept-Encoding'] = `gzip, deflate, br`
-    url.headers['Referer'] = `https://nebula.kuaishou.com/nebula/task/earning?source=timer&layoutType=4`
-   
-    sy.get(url, (error, response, data) => {
+      let detail = ``
+      let subTitle = ``
+	  let signurl = {
+		url: 'https://nebula.kuaishou.com/rest/n/nebula/sign/sign',
+		headers: {
+			Cookie: cookieVal
+		}
+	}
+    sy.get(signurl, (error, response, data) => {
+      //sy.log(`${cookieName}, data: ${data}`)
+      let result = JSON.parse(data)
+      if(result.result == 10007){
+        subTitle = `签到结果: ${result.error_msg}`
+        sy.msg(title,subTitle,'')
+        sy.done()
+      } else {
+      } 
+     })
+	let earnurl = {
+		url: 'https://nebula.kuaishou.com/rest/n/nebula/sign/query',
+		headers: {
+			Cookie: cookieVal
+		}
+	}
+    sy.get(earnurl, (error, response, data) => {
       sy.log(`${cookieName}, data: ${data}`)
       let result = JSON.parse(data)
-      
-      const title = `${cookieName}`
-      let subTitle = ``
-      let detail = ``
-    
-      if (result.code == 0) {
-        subTitle = `签到结果:   成功`
-        detail = `现金收益:${result.data.allCash}元 金币收益: ${result.data.totalCoin}`
-      } else if(result.result == 10007){
-        subTitle = `签到结果: 失败`
-        detail = `说明: ${result.error_msg}`
-      } else {
-        subTitle = `签到结果: 重复签到`
-        detail = `现金收益:${result.data.allCash}元 金币收益: ${result.data.totalCoin}`
+     if (result.data.nebulaSignInPopup.button == '立即签到'){ 
+       subTitle = `签到成功: ${result.data.nebulaSignInPopup.subTitle} ${result.data.nebulaSignInPopup.title}`
+      } else if (result.data.nebulaSignInPopup.button == '好的'){ 
+       subTitle = `重复签到: ${result.data.nebulaSignInPopup.subTitle}, ${result.data.nebulaSignInPopup.title}`
       }
-      sy.msg(title, subTitle, detail)
-      sy.log(`获取收益: ${result.data.totalCoin}`)
     })
-    sy.done()
-    }
+    let reurl = {url:'https://nebula.kuaishou.com/rest/n/nebula/activity/earn/overview',
+    headers: {Cookie:cookieVal}
+   }
+	sy.get(reurl, (error, response, data) =>{
+		//sy.log(`${cookieName}, data: ${data}`)
+		let result = JSON.parse(data) 
+	  if (result.result == 1) {
+	        detail = `现金收益: 💵${result.data.allCash}元    金币收益: 💰${result.data.totalCoin}     `
+			sy.msg(title,subTitle,detail)
+			//sy.log(title,subTitle,detail)
+			} else {
+		   } 
+	    })
+      }
+   sy.done()
 
-  function init() {
+function init() {
     isSurge = () => {
       return undefined === this.$httpClient ? false : true
     }
