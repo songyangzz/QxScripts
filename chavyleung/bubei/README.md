@@ -1,46 +1,51 @@
-# 顺丰速运
+# 不背单词
 
 > 代码已同时兼容 Surge & QuanX, 使用同一份签到脚本即可
 
-> 2020.1.22 据实测顺丰的 Cookie 只能存活 1 天不到，大家先弃坑
-
-> 2020.3.15 恢复顺丰签到 (更新脚本、更新配置、重取 Cookie) (QuanX&Surge、商店&TF 都支持)
-
-> 2020.3.20 修复多余的登录失败提示问题 & 修复没有 \$done() 问题
-
+> 感谢[@danchaw](https://github.com/danchaw) PR
 ## 配置 (Surge)
 
 ```properties
 [MITM]
-hostname = sf-integral-sign-in.weixinjia.net
+sapi.beingfine.cn
 
 [Script]
-http-request ^https:\/\/sf-integral-sign-in.weixinjia.net\/app\/index script-path=scripts/sfexpress.cookie.js,debug=true
-cron "*/10 * * * * *" script-path=scripts/sfexpress.js,debug=true
+http-request ^https:\/\/sapi\.beingfine\.cn\/v3\/bb\/reward\/by-sign-in script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/bubei/bubei.js
+cron "10 0 0 * * *" script-path=https://raw.githubusercontent.com/chavyleung/scripts/master/bubei/bubei.js
 ```
 
 ## 配置 (QuanX)
 
 ```properties
 [MITM]
-hostname = sf-integral-sign-in.weixinjia.net
+sapi.beingfine.cn
 
 [rewrite_local]
-^https:\/\/sf-integral-sign-in.weixinjia.net\/app\/index url script-request-header sfexpress.cookie.js
+
+# [商店版]
+^https:\/\/sapi\.beingfine\.cn\/v3\/bb\/reward\/by-sign-in url script-request-header bubei.js
+
+# [TestFlight]
+^https:\/\/sapi\.beingfine\.cn\/v3\/bb\/reward\/by-sign-in url script-request-header https://raw.githubusercontent.com/chavyleung/scripts/master/bubei/bubei.js
 
 [task_local]
-1 0 * * * sfexpress.js
+
+# [商店版]
+1 0 * * * bubei.js
+
+# [TestFlight]
+1 0 * * * https://raw.githubusercontent.com/chavyleung/scripts/master/bubei/bubei.js
 ```
 
 ## 说明
 
-1. 先把`sf-integral-sign-in.weixinjia.net`加到`[MITM]`
+1. 先把`sapi.beingfine.cn`加到`[MITM]`
 2. 再配置重写规则:
    - Surge: 把两条远程脚本放到`[Script]`
-   - QuanX: 把`sfexpress.cookie.js`和`sfexpress.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
-3. 打开 APP, 访问下`我的顺丰` > `去签到` (访问下`去签到`的页面即可, 不用点`签到`)
-4. 系统提示: `获取Cookie: 成功` （如果不提示获取成功, 尝试杀进程再进签到页面）
-5. 最后就可以把第 1 条脚本注释掉了
+   - QuanX: 把`bubei.js`传到`On My iPhone - Quantumult X - Scripts` (传到 iCloud 相同目录也可, 注意要打开 quanx 的 iCloud 开关)
+3. 打开 APP[不背单词](https://apps.apple.com/cn/app/%E4%B8%8D%E8%83%8C%E5%8D%95%E8%AF%8D-%E7%9C%9F%E5%AE%9E%E8%AF%AD%E5%A2%83%E5%AD%A6%E8%8B%B1%E8%AF%AD%E5%8D%95%E8%AF%8D/id698570469) 然后手动签到 1 次, 系统提示: `首次写入不背单词Url成功🎉`和`首次写入不背单词Cookie成功🎉`
+4. 最后就可以把第 1 条脚本注释掉了
+5. 运行一次脚本, 如果提示说明:aceess_denied#30103, 那就算成功了!
 
 > 第 1 条脚本是用来获取 cookie 的, 用浏览器访问一次获取 cookie 成功后就可以删掉或注释掉了, 但请确保在`登录成功`后再获取 cookie.
 
@@ -95,3 +100,5 @@ hostname = sf-integral-sign-in.weixinjia.net
 [@lhie1](https://github.com/lhie1)
 
 [@ConnersHua](https://github.com/ConnersHua)
+
+[@danchaw](https://github.com/danchaw)

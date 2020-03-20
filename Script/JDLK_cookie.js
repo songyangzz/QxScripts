@@ -1,27 +1,16 @@
-const cookieName = '分期乐'
-const signurlKey = 'senku_signurl_fenqile'
-const signheaderKey = 'senku_signheader_fenqile'
-const signbodyKey = 'senku_signbody_fenqile'
-const signDailyKey = 'senku_signDailyKey_fenqile'
-const signDailyUrlKey = 'senku_signDailyUrlKey_fenqile'
-const senku = init()
-
+const cookieName = '京东来客有礼'
+const signurlKey = 'sy_signurl_lkyl'
+const signheaderKey = 'sy_signheader_lkyl'
+const sy = init()
 const requrl = $request.url
-if ($request && $request.method != 'OPTIONS' && requrl.match(/\/route0014\/star\/sign\//)) {
+if ($request && $request.method != 'OPTIONS') {
   const signurlVal = requrl
   const signheaderVal = JSON.stringify($request.headers)
-  const signbodyVal = $request.body
-  if (signurlVal) senku.setdata(signurlVal, signurlKey)
-  if (signheaderVal) senku.setdata(signheaderVal, signheaderKey)
-  if (signbodyVal) senku.setdata(signbodyVal, signbodyKey)
-  senku.msg(cookieName, `获取Cookie: 成功`, `签到领乐星`)
-} else {
-  const signDailyUrlVal = $request.url
-  const signDailyVal = $request.body;
-  if (signDailyUrlVal) senku.setdata(signDailyUrlVal,signDailyUrlKey)
-  if (signDailyVal) senku.setdata(signDailyVal,signDailyKey)
-  senku.msg(cookieName, `获取Cookie: 成功`, `天天领乐星`)
-  senku.log()
+  sy.log(`signurlVal:${signurlVal}`)
+  sy.log(`signheaderVal:${signheaderVal}`)
+  if (signurlVal) sy.setdata(signurlVal, signurlKey)
+  if (signheaderVal) sy.setdata(signheaderVal, signheaderKey)
+  sy.msg(cookieName, `获取Cookie: 成功🎉`, ``)
 }
 
 function init() {
@@ -67,4 +56,4 @@ function init() {
   }
   return { isSurge, isQuanX, msg, log, getdata, setdata, get, post, done }
 }
-senku.done()
+sy.done()
