@@ -1,0 +1,8 @@
+surge解锁哔哩哔哩大会员视频
+私聊机器人https://t.me/Biliiii_bot 进行uid绑定然后可以直接使用
+uid查看：https://share.weiyun.com/574Rv31
+注意：由于免费共享，每天最多调用23次，仅作学习交流使用
+hostname= api.bilibili.com
+自行添加到rewrite
+https:\/\/api.bilibili.com\/pgc\/view\/app\/season http://api.bili.best/season 302
+https:\/\/api\.bilibili\.com\/pgc\/player\/api\/playurl http://api.bili.best/playurl 302
