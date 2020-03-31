@@ -1,22 +1,17 @@
-const chavy = init()
-const cookieName = '顺丰速运'
-const KEY_loginurl = 'chavy_loginurl_sfexpress'
-const KEY_loginheader = 'chavy_loginheader_sfexpress'
-const KEY_login27url = 'chavy_login27url_sfexpress'
-const KEY_login27header = 'chavy_login27header_sfexpress'
+const cookieName = '豆瓣时间'
+const signurlKey = 'senku_signurl_dbsj'
+const signheaderKey = 'senku_signheader_dbsj'
+const signbodyKey = 'senku_signbody_dbsj'
+const senku = init()
 
-if ($request && $request.method != 'OPTIONS' && $request.url.match(/app\/index/)) {
-  const VAL_loginurl = $request.url
-  const VAL_loginheader = JSON.stringify($request.headers)
-  if (VAL_loginurl) chavy.setdata(VAL_loginurl, KEY_loginurl)
-  if (VAL_loginheader) chavy.setdata(VAL_loginheader, KEY_loginheader)
-  chavy.msg(cookieName, `获取Cookie: 成功`, ``)
-} else if ($request && $request.method != 'OPTIONS' && $request.url.match(/mcs-mimp\/share\/(.*?)Redirect/)) {
-  const VAL_login27url = $request.url
-  const VAL_login27header = JSON.stringify($request.headers)
-  if (VAL_login27url) chavy.setdata(VAL_login27url, KEY_login27url)
-  if (VAL_login27header) chavy.setdata(VAL_login27header, KEY_login27header)
-  chavy.msg(cookieName, `获取Cookie: 成功 (27周年)`, ``)
+const requrl = $request.url
+if ($request && $request.method != 'OPTIONS') {
+  const signurlVal = requrl
+  const signheaderVal = JSON.stringify($request.headers)
+
+  if (signurlVal) senku.setdata(signurlVal, signurlKey)
+  if (signheaderVal) senku.setdata(signheaderVal, signheaderKey)
+  senku.msg(cookieName, `获取Cookie: 成功`, ``)
 }
 
 function init() {
@@ -62,4 +57,4 @@ function init() {
   }
   return { isSurge, isQuanX, msg, log, getdata, setdata, get, post, done }
 }
-chavy.done()
+senku.done()
