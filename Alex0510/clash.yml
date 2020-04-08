@@ -1,0 +1,481 @@
+# HTTP 代理端口
+port: 7890
+
+# SOCKS5 代理端口
+socks-port: 7891
+
+# Linux 和 macOS 的 redir 代理端口 (如需使用此功能，请取消注释)
+# redir-port: 7892
+
+# 允许局域网的连接（可用来共享代理）
+allow-lan: false
+
+# 规则模式：Rule（规则） / Global（全局代理）/ Direct（全局直连）
+mode: Rule
+
+# 设置日志输出级别 (默认级别：silent，即不输出任何内容，以避免因日志内容过大而导致程序内存溢出）。
+# 5 个级别：silent / info / warning / error / debug。级别越高日志输出量越大，越倾向于调试，若需要请自行开启。
+log-level: info
+
+# clash 的 RESTful API
+external-controller: 127.0.0.1:9090
+dns:
+  enable: true
+  ipv6: false
+  listen: 127.0.0.1:53
+  enhanced-mode: fake-ip
+  nameserver:
+     - 1.2.4.8
+     - 114.114.114.114
+     - 223.5.5.5
+  fallback:
+     - tls://dns.rubyfish.cn:853
+     - tls://1.0.0.1:853
+     - tls://dns.google:853
+
+# 代理节点
+Proxy:
+
+# 代理组策略
+Proxy Group:
+# url-test 通过对 URL 对速度进行基准测试，自动选择最快的节点。
+- { name: "UrlTest", type: url-test, proxies: ["🇨🇳 中国上海 Back", "🇨🇳 中国上海 Back", "🇨🇳 中国上海 Back"], url: "http://www.gstatic.com/generate_204", interval: 300 }
+
+# 代理节点选择
+- { name: "PROXY", type: select, proxies: ["UrlTest","🇨🇳 中国上海 Back", "🇨🇳 中国上海 Back", "🇨🇳 中国上海 Back"] }
+
+
+#回国规则
+Rule:
+# China Area Network
+# > 360
+DOMAINSUFFIX,qhres.com,Proxy
+DOMAINSUFFIX,qhimg.com,Proxy
+# > Akamai
+DOMAINSUFFIX,akadns.net,Proxy
+# DOMAINSUFFIX,akamai.net,Proxy
+# DOMAINSUFFIX,akamaiedge.net,Proxy
+# DOMAINSUFFIX,akamaihd.net,Proxy
+# DOMAINSUFFIX,akamaistream.net,Proxy
+# DOMAINSUFFIX,akamaized.net,Proxy
+# > Alibaba
+DOMAINSUFFIX,alibaba.com,Proxy
+DOMAINSUFFIX,alicdn.com,Proxy
+DOMAINSUFFIX,alikunlun.com,Proxy
+DOMAINSUFFIX,alipay.com,Proxy
+DOMAINSUFFIX,amap.com,Proxy
+DOMAINSUFFIX,autonavi.com,Proxy
+DOMAINSUFFIX,dingtalk.com,Proxy
+DOMAINSUFFIX,mxhichina.com,Proxy
+DOMAINSUFFIX,soku.com,Proxy
+DOMAINSUFFIX,taobao.com,Proxy
+DOMAINSUFFIX,tmall.com,Proxy
+DOMAINSUFFIX,tmall.hk,Proxy
+DOMAINSUFFIX,ykimg.com,Proxy
+DOMAINSUFFIX,youku.com,Proxy
+DOMAINSUFFIX,xiami.com,Proxy
+DOMAINSUFFIX,xiami.net,Proxy
+# > Baidu
+DOMAINSUFFIX,baidu.com,Proxy
+DOMAINSUFFIX,baidubcr.com,Proxy
+DOMAINSUFFIX,bdstatic.com,Proxy
+DOMAINSUFFIX,yunjiasucdn.net,Proxy
+# > bilibili
+DOMAINSUFFIX,acgvideo.com,Proxy
+DOMAINSUFFIX,biliapi.com,Proxy
+DOMAINSUFFIX,biliapi.net,Proxy
+DOMAINSUFFIX,bilibili.com,Proxy
+DOMAINSUFFIX,bilibili.tv,Proxy
+DOMAINSUFFIX,hdslb.com,Proxy
+# > Blizzard
+DOMAINSUFFIX,blizzard.com,Proxy
+DOMAINSUFFIX,battle.net,Proxy
+DOMAIN,blzddist1a.akamaihd.net,Proxy
+# > ByteDance
+DOMAINSUFFIX,feiliao.com,Proxy
+DOMAINSUFFIX,pstatp.com,Proxy
+DOMAINSUFFIX,snssdk.com,Proxy
+DOMAINSUFFIX,iesdouyin.com,Proxy
+DOMAINSUFFIX,toutiao.com,Proxy
+# > CCTV
+DOMAINSUFFIX.cc,Proxytv.com,Proxy
+DOMAINSUFFIX.cc,Proxytvpic.com,Proxy
+DOMAINSUFFIX,livechina.com,Proxy
+# > DiDi
+DOMAINSUFFIX,didialift.com,Proxy
+DOMAINSUFFIX,didiglobal.com,Proxy
+DOMAINSUFFIX,udache.com,Proxy
+# > 蛋蛋赞
+DOMAINSUFFIX,343480.com,Proxy
+DOMAINSUFFIX,baduziyuan.com,Proxy
+DOMAINSUFFIX.com,Proxyhshkdy.com,Proxy
+DOMAINSUFFIX,czybjz.com,Proxy
+DOMAINSUFFIX,dandanzan.com,Proxy
+DOMAINSUFFIX,fjhps.com,Proxy
+DOMAINSUFFIX,kuyunbo.club,Proxy
+# > ChinaNet
+DOMAINSUFFIX,21cn.com,Proxy
+# > HunanTV
+DOMAINSUFFIX,hitv.com,Proxy
+DOMAINSUFFIX,mgtv.com,Proxy
+# > iQiyi
+DOMAINSUFFIX,iqiyi.com,Proxy
+DOMAINSUFFIX,iqiyipic.com,Proxy
+DOMAINSUFFIX,71.am.com,Proxy
+# > JD
+DOMAINSUFFIX,jd.com,Proxy
+DOMAINSUFFIX,jd.hk,Proxy
+DOMAINSUFFIX,jdpay.com,Proxy
+DOMAINSUFFIX,360buyimg.com,Proxy
+# > Kingsoft
+DOMAINSUFFIX,iciba.com,Proxy
+DOMAINSUFFIX,ksosoft.com,Proxy
+# > Meitu
+DOMAINSUFFIX,meitu.com,Proxy
+DOMAINSUFFIX,meitudata.com,Proxy
+DOMAINSUFFIX,meitustat.com,Proxy
+DOMAINSUFFIX,meipai.com,Proxy
+# > MI
+DOMAINSUFFIX,duokan.com,Proxy
+DOMAINSUFFIX,miimg.com,Proxy
+DOMAINSUFFIX,miui.com,Proxy
+DOMAINSUFFIX,miwifi.com,Proxy
+DOMAINSUFFIX,xiaomi.com,Proxy
+# > Microsoft
+DOMAINSUFFIX,microsoft.com,Proxy
+DOMAINSUFFIX,msecnd.net,Proxy
+DOMAINSUFFIX,office365.com,Proxy
+DOMAINSUFFIX,outlook.com,Proxy
+DOMAINSUFFIX,smicrosoft.com,Proxy
+DOMAINSUFFIX,visualstudio.com,Proxy
+DOMAINSUFFIX,windows.com,Proxy
+DOMAINSUFFIX,windowsupdate.com,Proxy
+DOMAIN,officecdnmicrosoft.com,Proxy
+DOMAIN,akamaized.net,Proxy
+# > NetEase
+USERAGENT,NeteaseMusic*,Proxy
+DOMAINSUFFIX,163.com,Proxy
+DOMAINSUFFIX,126.net,Proxy
+DOMAINSUFFIX,127.net,Proxy
+DOMAINSUFFIX,163yun.com,Proxy
+DOMAINSUFFIX,lofter.com,Proxy
+DOMAINSUFFIX.net,Proxyease.com,Proxy
+DOMAINSUFFIX,ydstatic.com,Proxy
+# > Sina
+DOMAINSUFFIX,sina.com,Proxy
+DOMAINSUFFIX,weibo.com,Proxy
+DOMAINSUFFIX,weibocdn.com,Proxy
+# > Sohu
+DOMAINSUFFIX,sohu.com,Proxy
+DOMAINSUFFIX,sohucs.com,Proxy
+DOMAINSUFFIX,sohuinc.com,Proxy
+DOMAINSUFFIX,v56.com,Proxy
+# > Sogo
+DOMAINSUFFIX,sogo.com,Proxy
+DOMAINSUFFIX,sogou.com,Proxy
+DOMAINSUFFIX,sogoucdn.com,Proxy
+# > Tencent
+USERAGENT,MicroMessenger%20Client,Proxy
+USERAGENT,WeChat*,Proxy
+USERAGENT,%E4%BC%81%E4%B8%9A%E5%BE%AE%E4%BF%A1*,Proxy
+DOMAINSUFFIX,gtimg.com,Proxy
+DOMAINSUFFIX,idqqimg.com,Proxy
+DOMAINSUFFIX,igamecj.com,Proxy
+DOMAINSUFFIX,myapp.com,Proxy
+DOMAINSUFFIX,myqcloud.com,Proxy
+DOMAINSUFFIX,qq.com,Proxy
+DOMAINSUFFIX,servicewechat.com,Proxy
+DOMAINSUFFIX,tencent.com,Proxy
+DOMAINSUFFIX,tencentcloud.net,Proxy
+DOMAINSUFFIX,tenpay.com,Proxy
+DOMAIN,fileigamecj.akamaized.net,Proxy
+# > YYeTs
+USERAGENT,YYeTs*,Proxy
+DOMAINSUFFIX,jstucdn.com,Proxy
+DOMAINSUFFIX,zimuzu.io,Proxy
+DOMAINSUFFIX,zimuzu.tv,Proxy
+DOMAINSUFFIX,zmz2019.com,Proxy
+DOMAINSUFFIX,zmzapi.com,Proxy
+DOMAINSUFFIX,zmzapi.net,Proxy
+DOMAINSUFFIX,zmzfile.com,Proxy
+# > Content Delivery Network
+DOMAINSUFFIX.cc,Proxygslb.com,Proxy
+DOMAINSUFFIX.cc,Proxygslb.net,Proxy
+DOMAINSUFFIX,chin.net,Proxycenter.com,Proxy
+DOMAINSUFFIX,meixincdn.com,Proxy
+DOMAINSUFFIX,ourdvs.com,Proxy
+DOMAINSUFFIX,staticdn.net,Proxy
+DOMAINSUFFIX,wangsu.com,Proxy
+# > IP Query
+DOMAINSUFFIX,ipip.net,Proxy
+DOMAINSUFFIX,ip.la,Proxy
+DOMAINSUFFIX,ipcdn.com,Proxy
+DOMAINSUFFIX,ipv6test.com,Proxy
+DOMAINSUFFIX,testipv6.com,Proxy
+DOMAINSUFFIX,whatismyip.com,Proxy
+# > Speed Test
+# DOMAINSUFFIX,speedtest.net,Proxy
+DOMAINSUFFIX.net,Proxyspeedtestmaster.com,Proxy
+DOMAIN,speedtest.macpaw.com,Proxy
+# > Private Tracker
+DOMAINSUFFIX,awesomehd.me,Proxy
+DOMAINSUFFIX,broadcasthe.net,Proxy
+DOMAINSUFFIX,chdbits.co,Proxy
+DOMAINSUFFIX,classixunlimited.co.uk,Proxy
+DOMAINSUFFIX,empornium.me,Proxy
+DOMAINSUFFIX,gazellegames.net,Proxy
+DOMAINSUFFIX,hdchina.org,Proxy
+DOMAINSUFFIX,hdsky.me,Proxy
+DOMAINSUFFIX,icetorrent.org,Proxy
+DOMAINSUFFIX,jpopsuki.eu,Proxy
+DOMAINSUFFIX,keepfrds.com,Proxy
+DOMAINSUFFIX,madsrevolution.net,Proxy
+DOMAINSUFFIX,mteam.cc,Proxy
+DOMAINSUFFIX,nanyangpt.com,Proxy
+DOMAINSUFFIX,ncore.cc,Proxy
+DOMAINSUFFIX,open.cd,Proxy
+DOMAINSUFFIX,ourbits.club,Proxy
+DOMAINSUFFIX,passthepopcorn.me,Proxy
+DOMAINSUFFIX,privatehd.to,Proxy
+DOMAINSUFFIX,redacted.ch,Proxy
+DOMAINSUFFIX,springsunday.net,Proxy
+DOMAINSUFFIX,tjupt.org,Proxy
+DOMAINSUFFIX,totheglory.im,Proxy
+# > Scholar
+DOMAINSUFFIX,acm.org,Proxy
+DOMAINSUFFIX,acs.org,Proxy
+DOMAINSUFFIX,aip.org,Proxy
+DOMAINSUFFIX,ams.org,Proxy
+DOMAINSUFFIX,annualreviews.org,Proxy
+DOMAINSUFFIX,aps.org,Proxy
+DOMAINSUFFIX,ascelibrary.org,Proxy
+DOMAINSUFFIX,asm.org,Proxy
+DOMAINSUFFIX,asme.org,Proxy
+DOMAINSUFFIX,astm.org,Proxy
+DOMAINSUFFIX,bmj.com,Proxy
+DOMAINSUFFIX,cambridge.org,Proxy
+DOMAINSUFFIX,cas.org,Proxy
+DOMAINSUFFIX,clarivate.com,Proxy
+DOMAINSUFFIX,ebscohost.com,Proxy
+DOMAINSUFFIX,emerald.com,Proxy
+DOMAINSUFFIX,engineeringvillage.com,Proxy
+DOMAINSUFFIX,icevirtuallibrary.com,Proxy
+DOMAINSUFFIX,ieee.org,Proxy
+DOMAINSUFFIX,imf.org,Proxy
+DOMAINSUFFIX,iop.org,Proxy
+DOMAINSUFFIX,jam.net,Proxywork.com,Proxy
+DOMAINSUFFIX,jhu.edu,Proxy
+DOMAINSUFFIX,jstor.org,Proxy
+DOMAINSUFFIX,karger.com,Proxy
+DOMAINSUFFIX,libguides.com,Proxy
+DOMAINSUFFIX,mpg.de,Proxy
+DOMAINSUFFIX,myilibrary.com,Proxy
+DOMAINSUFFIX,nature.com,Proxy
+DOMAINSUFFIX,oecdilibrary.org,Proxy
+DOMAINSUFFIX,osapublishing.org,Proxy
+DOMAINSUFFIX,oup.com,Proxy
+DOMAINSUFFIX,ovid.com,Proxy
+DOMAINSUFFIX,oxfordartonline.com,Proxy
+DOMAINSUFFIX,oxfordbibliographies.com,Proxy
+DOMAINSUFFIX,oxfordmusiconline.com,Proxy
+DOMAINSUFFIX,pnas.org,Proxy
+DOMAINSUFFIX,proquest.com,Proxy
+DOMAINSUFFIX,rsc.org,Proxy
+DOMAINSUFFIX,sagepub.com,Proxy
+DOMAINSUFFIX,sciencedirect.com,Proxy
+DOMAINSUFFIX,sciencemag.org,Proxy
+DOMAINSUFFIX,scopus.com,Proxy
+DOMAINSUFFIX,siam.org,Proxy
+DOMAINSUFFIX,spiedigitallibrary.org,Proxy
+DOMAINSUFFIX,springer.com,Proxy
+DOMAINSUFFIX,springerlink.com,Proxy
+DOMAINSUFFIX,tandfonline.com,Proxy
+DOMAINSUFFIX,un.org,Proxy
+DOMAINSUFFIX,unibielefeld.de,Proxy
+DOMAINSUFFIX,webofknowledge.com,Proxy
+DOMAINSUFFIX,westlaw.com,Proxy
+DOMAINSUFFIX,wiley.com,Proxy
+DOMAINSUFFIX,worldbank.org,Proxy
+DOMAINSUFFIX,worldscientific.com,Proxy
+# > Other
+DOMAINSUFFIX,360in.com,Proxy
+DOMAINSUFFIX,51ym.me,Proxy
+DOMAINSUFFIX,8686c.com,Proxy
+DOMAINSUFFIX,abchina.com,Proxy
+DOMAINSUFFIX,.cc,Proxyuweather.com,Proxy
+DOMAINSUFFIX,aicoinstorge.com,Proxy
+DOMAINSUFFIX,airmatters.com,Proxy
+DOMAINSUFFIX,airmatters.io,Proxy
+DOMAINSUFFIX,aixifan.com,Proxy
+DOMAINSUFFIX,amd.com,Proxy
+DOMAINSUFFIX,b612.net,Proxy
+DOMAINSUFFIX,bdatu.com,Proxy
+DOMAINSUFFIX,beitaichufang.com,Proxy
+DOMAINSUFFIX,bjango.com,Proxy
+DOMAINSUFFIX,booking.com,Proxy
+DOMAINSUFFIX,bstatic.com,Proxy
+DOMAINSUFFIX,cailianpress.com,Proxy
+DOMAINSUFFIX,camera360.com,Proxy
+DOMAINSUFFIX,chinaso.com,Proxy
+DOMAINSUFFIX,chua.pro,Proxy
+DOMAINSUFFIX,chuimg.com,Proxy
+DOMAINSUFFIX,chunyu.mobi,Proxy
+DOMAINSUFFIX,chushou.tv,Proxy
+DOMAINSUFFIX,cmbchina.com,Proxy
+DOMAINSUFFIX,cmbimg.com,Proxy
+DOMAINSUFFIX,ctrip.com,Proxy
+DOMAINSUFFIX,dfcfw.com,Proxy
+DOMAINSUFFIX,docschina.org,Proxy
+DOMAINSUFFIX,douban.com,Proxy
+DOMAINSUFFIX,doubanio.com,Proxy
+DOMAINSUFFIX,douyu.com,Proxy
+DOMAINSUFFIX,dxycdn.com,Proxy
+DOMAINSUFFIX,dytt8.net,Proxy
+DOMAINSUFFIX,eastmoney.com,Proxy
+DOMAINSUFFIX,eudic.net,Proxy
+DOMAINSUFFIX,feng.com,Proxy
+DOMAINSUFFIX,fengkongcloud.com,Proxy
+DOMAINSUFFIX,frdic.com,Proxy
+DOMAINSUFFIX,futu5.com,Proxy
+DOMAINSUFFIX,futunn.com,Proxy
+DOMAINSUFFIX,gandi.net,Proxy
+DOMAINSUFFIX,geilicdn.com,Proxy
+DOMAINSUFFIX,getpricetag.com,Proxy
+DOMAINSUFFIX,gifshow.com,Proxy
+DOMAINSUFFIX,godic.net,Proxy
+DOMAINSUFFIX,hicloud.com,Proxy
+DOMAINSUFFIX,hongxiu.com,Proxy
+DOMAINSUFFIX,hostbuf.com,Proxy
+DOMAINSUFFIX,huxiucdn.com,Proxy
+DOMAINSUFFIX,huya.com,Proxy
+DOMAINSUFFIX,infinitynewtab.com,Proxy
+DOMAINSUFFIX,ithome.com,Proxy
+DOMAINSUFFIX,java.com,Proxy
+DOMAINSUFFIX,jidian.im,Proxy
+DOMAINSUFFIX,kaiyanapp.com,Proxy
+DOMAINSUFFIX,kasperskylabs.com,Proxy
+DOMAINSUFFIX,keepcdn.com,Proxy
+DOMAINSUFFIX,kkmh.com,Proxy
+DOMAINSUFFIX,licdn.com,Proxy
+DOMAINSUFFIX,linkedin.com,Proxy
+DOMAINSUFFIX,loli.net,Proxy
+DOMAINSUFFIX,luojilab.com,Proxy
+DOMAINSUFFIX,maoyan.com,Proxy
+DOMAINSUFFIX,maoyun.tv,Proxy
+DOMAINSUFFIX,meituan.com,Proxy
+DOMAINSUFFIX,meituan.net,Proxy
+DOMAINSUFFIX,mobike.com,Proxy
+DOMAINSUFFIX,moke.com,Proxy
+DOMAINSUFFIX,mubu.com,Proxy
+DOMAINSUFFIX,myzaker.com,Proxy
+DOMAINSUFFIX,nimlangcn.org,Proxy
+DOMAINSUFFIX,nvidia.com,Proxy
+DOMAINSUFFIX,oracle.com,Proxy
+DOMAINSUFFIX,paypal.com,Proxy
+DOMAINSUFFIX,paypalobjects.com,Proxy
+DOMAINSUFFIX,qdaily.com,Proxy
+DOMAINSUFFIX,qidian.com,Proxy
+DOMAINSUFFIX,qyer.com,Proxy
+DOMAINSUFFIX,qyerstatic.com,Proxy
+DOMAINSUFFIX,raychase.net,Proxy
+DOMAINSUFFIX,ronghub.com,Proxy
+DOMAINSUFFIX,ruguoapp.com,Proxy
+DOMAINSUFFIX,sreader.com,Proxy
+DOMAINSUFFIX,sankuai.com,Proxy
+DOMAINSUFFIX,.com,Proxyper.me,Proxy
+DOMAINSUFFIX,seafile.com,Proxy
+DOMAINSUFFIX,sm.ms,Proxy
+DOMAINSUFFIX,smzdm.com,Proxy
+DOMAINSUFFIX,snapdrop.net,Proxy
+DOMAINSUFFIX,snwx.com,Proxy
+DOMAINSUFFIX,sspai.com,Proxy
+DOMAINSUFFIX,takungpao.com,Proxy
+DOMAINSUFFIX,teamviewer.com,Proxy
+DOMAINSUFFIX,tianyancha.com,Proxy
+DOMAINSUFFIX,udacity.com,Proxy
+DOMAINSUFFIX,uning.com,Proxy
+DOMAINSUFFIX,vmware.com,Proxy
+DOMAINSUFFIX,weather.com,Proxy
+DOMAINSUFFIX,weico.cc,Proxy
+DOMAINSUFFIX,weidian.com,Proxy
+DOMAINSUFFIX,xiachufang.com,Proxy
+DOMAINSUFFIX,ximalaya.com,Proxy
+DOMAINSUFFIX,xinhu.net,Proxy.com,Proxy
+DOMAINSUFFIX,xmcdn.com,Proxy
+DOMAINSUFFIX,yangkeduo.com,Proxy
+DOMAINSUFFIX,zhangzishi.cc,Proxy
+DOMAINSUFFIX,zhihu.com,Proxy
+DOMAINSUFFIX,zhimg.com,Proxy
+DOMAINSUFFIX,zhuihd.com,Proxy
+DOMAIN,download.jetbrains.com,Proxy
+DOMAIN,imagescn.sslimagesamazon.com,Proxy
+# > AcFun
+USERAGENT,AcFun*,Proxy
+DOMAINSUFFIX,acfun.cn,Proxy
+DOMAINSUFFIX,acfun.com,Proxy
+DOMAINSUFFIX,aixifan.com,Proxy
+USERAGENT,biliuniversal,Proxy
+USERAGENT,Bilibili*,Proxy
+DOMAINSUFFIX,acgvideo.com,Proxy
+DOMAINSUFFIX,bilibili.com,Proxy
+DOMAINSUFFIX,hdslb.com,Proxy
+USERAGENT,MGTV*,Proxy
+DOMAINSUFFIX,hitv.com,Proxy
+DOMAINSUFFIX,hunantv.com,Proxy
+DOMAINSUFFIX,mgtv.com,Proxy
+# > Migu
+USERAGENT,MiguVideo*,Proxy
+USERAGENT,%E5%92%AA%E5%92%95%E8%A7%86%E9%A2%91,Proxy
+DOMAINSUFFIX,cmvideo.cn,Proxy
+DOMAINSUFFIX,migu.cn,Proxy
+DOMAINSUFFIX,miguvideo.com,Proxy
+USERAGENT,iQiYiPhoneVideo,Proxy
+USERAGENT,PPStream,Proxy
+USERAGENT,QIYIVideo,Proxy
+USERAGENT,QYPlayer,Proxy
+DOMAINSUFFIX,iqiyi.com,Proxy
+DOMAINSUFFIX,iqiyipic.com,Proxy
+DOMAINSUFFIX,qy.net,Proxy
+DOMAINSUFFIX,sohu.com,Proxy
+DOMAINSUFFIX,sohu.com.cn,Proxy
+DOMAINSUFFIX,itc.cn,Proxy
+DOMAINSUFFIX,v56.com,Proxy
+USERAGENT,live4iphone*,Proxy
+USERAGENT,qqlive4iphone*,Proxy
+USERAGENT,TencentMidasConnect*,Proxy
+DOMAINSUFFIX,video.qq.com,Proxy
+# > Youku
+USERAGENT,Youku*,Proxy
+USERAGENT,%E4%BC%98%E9%85%B7*,Proxy
+DOMAINSUFFIX,soku.com,Proxy
+DOMAINSUFFIX,youku.com,Proxy
+DOMAINSUFFIX,ykimg.com,Proxy
+
+# (Music)
+USERAGENT,walkman*,Proxy
+USERAGENT,xiami*,Proxy
+DOMAINSUFFIX,xiami.com,Proxy
+DOMAINSUFFIX,xiami.net,Proxy
+# > Netease
+USERAGENT,NeteaseMusic*,Proxy
+USERAGENT,%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90*,Proxy
+DOMAINSUFFIX,music.126.net,Proxy
+DOMAINSUFFIX,music.163.com,Proxy
+USERAGENT,MOO%E9%9F%B3%E4%B9%90*,Proxy
+USERAGENT,QQ%E9%9F%B3%E4%B9%90,Proxy
+DOMAINSUFFIX,qqmusic.qq.com,Proxy
+DOMAINSUFFIX,y.qq.com,Proxy
+DOMAIN,aqqmusic.tc.qq.com,Proxy
+# Kugou and Kuwo
+DOMAINSUFFIX,kugou.com,Proxy
+USERAGENT,%E9%85%B7%E6%88%91%E9%9F%B3%E4%B9%90*,Proxy
+DOMAINSUFFIX,kuwo.cn,Proxy
+DOMAINSUFFIX,koowo.com,Proxy
+USERAGENT,baiduyinyue,Proxy
+DOMAINSUFFIX,qianqian.com,Proxy
+
+
+GEOIP,CN,PROXY
+
+MATCH,DIRECT
+

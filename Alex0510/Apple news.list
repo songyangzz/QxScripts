@@ -1,0 +1,22 @@
+[Proxy Group]
+Apple 地理限制 = select, DIRECT, US
+US = url-test, Proxy, url = http://www.gstatic.com/generate_204, interval = 1200
+
+[Rule]
+USER-AGENT,com.apple.geod*,Apple 地理限制
+USER-AGENT,com.apple.Maps,Apple 地理限制
+USER-AGENT,geod*,Apple 地理限制
+USER-AGENT,locationd*,Apple 地理限制
+USER-AGENT,Maps*,Apple 地理限制
+DOMAIN,gs-loc.apple.com,Apple 地理限制 // Maps
+DOMAIN-SUFFIX,lcdn-locator.apple.com,Apple 地理限制
+DOMAIN-SUFFIX,lcdn-registration.apple.com,Apple 地理限制
+DOMAIN-SUFFIX,ls.apple.com,Apple 地理限制
+
+USER-AGENT,AppleNews*,US
+DOMAIN-SUFFIX,apple.news,US
+DOMAIN,news-events.apple.com,US
+DOMAIN,news-edge.apple.com,US
+DOMAIN,apple.comscoreresearch.com,US
+DOMAIN,play.itunes.apple.com,US
+DOMAIN,play-cdn.itunes-apple.com.akadns.net,US
