@@ -6,7 +6,11 @@
 
 #订阅地址(https://raw.githubusercontent.com/nzw9314/QuantumultX/master/Js_Local_WorkingCopy_Cookie.conf)
 
+<<<<<<< HEAD
 hostname = api.m.jd.com, music.163.com, c.tieba.baidu.com, weibo.com, *.iqiyi.com, *.smzdm.com, *.v2ex.com, www.52pojie.cn, *.bilibili.com, *.feng.com, *.video.qq.com, *.acfun.cn, *.rrys2019.com, mobwsa.ximalaya.com, *.rr.tv, www.flyertea.com, wapside.189.cn, sf-integral-sign-in.weixinjia.net, h5.ele.me, *.you.163.com, apk.tw, api.dongqiudi.com, *.m.163.com, user.qunar.com, yuba.douyu.com, ios.zmzapi.com, *.csdn.net, m.ctrip.com, m.gdoil.cn, credits.bz.mgtv.com, api-takumi.mihoyo.com, act.10010.com, e.189.cn, www.maomicd.com, wx.10086.cn, mtrace.qq.com, www.lltxt.com, weclub.ccc.cmbchina.com, promotion.waimai.meituan.com, daojia.jd.com, api.everphoto.cn, group.baicizhan.com, maicai.api.ddxq.mobi, ms.jr.jd.com, nebula.kuaishou.com, app.nio.com, wxprdapplet.gac-nio.com, m.client.10010.com, 110.43.90.61, zt.wps.cn, xiaoshuo.qm989.com, m.ximalaya.com, iphone.myzaker.com, draw.jdfcloud.com, sapi.beingfine.cn, frodo.douban.com, mcs-mimp-web.sf-express.com, mwegame.qq.com, api.1sapp.com, api-hdcj.9w9.com, 
+=======
+hostname = api.m.jd.com, music.163.com, c.tieba.baidu.com, weibo.com, *.iqiyi.com, *.smzdm.com, *.v2ex.com, www.52pojie.cn, *.bilibili.com, *.feng.com, *.video.qq.com, *.acfun.cn, *.rrys2019.com, mobwsa.ximalaya.com, *.rr.tv, www.flyertea.com, wapside.189.cn, sf-integral-sign-in.weixinjia.net, h5.ele.me, *.you.163.com, apk.tw, api.dongqiudi.com, *.m.163.com, user.qunar.com, yuba.douyu.com, ios.zmzapi.com, *.csdn.net, m.ctrip.com, m.gdoil.cn, credits.bz.mgtv.com, api-takumi.mihoyo.com, act.10010.com, e.189.cn, www.maomicd.com, wx.10086.cn, mtrace.qq.com, www.lltxt.com, weclub.ccc.cmbchina.com, promotion.waimai.meituan.com, daojia.jd.com, api.everphoto.cn, group.baicizhan.com, maicai.api.ddxq.mobi, ms.jr.jd.com, nebula.kuaishou.com, app.nio.com, wxprdapplet.gac-nio.com, m.client.10010.com, 110.43.90.61, zt.wps.cn, xiaoshuo.qm989.com, m.ximalaya.com, iphone.myzaker.com, draw.jdfcloud.com, sapi.beingfine.cn, frodo.douban.com, mcs-mimp-web.sf-express.com, mwegame.qq.com, 
+>>>>>>> master
 
 
 # NobyDa
@@ -52,7 +56,14 @@ https:\/\/manga\.bilibili\.com\/.*\.User\/GetWallet url script-request-header nz
 ^https:\/\/api\-new\.app\.acfun\.cn\/rest\/app\/user\/personalInfo url script-request-header nzw9314/chavyleung/acfun/acfun.cookie.js
 
 #人人字幕组获取cookie
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+;^https?:\/\/(www\.)?rrys2019\.com\/?.? url script-request-header nzw9314/chavyleung/zimuzu/zimuzu.cookie.js
 
+=======
+>>>>>>> master
+>>>>>>> master
 ^https?:\/\/(www\.)?rrys2019\.com\/?.? url script-request-header nzw9314/chavyleung/zimuzu/zimuzu.cookie.js
 ^http:\/\/ios.zmzapi.com\/index.php.*a=(mobile_)?login url script-request-header nzw9314/chavyleung/zimuzu/zimuzu.cookie.js
 
@@ -156,6 +167,7 @@ https:\/\/www.maomicd.com\/plugin.php\?id=k_misign:sign&operation=qiandao url sc
 # 掌上飞车
 ^https:\/\/mwegame\.qq\.com\/ams\/sign\/doSign\/month url script-request-header nzw9314/chavyleung//zsfc/zsfc.js
 
+<<<<<<< HEAD
 # 趣头条
 ^https:\/\/api\.1sapp\.com\/sign\/sign? url script-request-header nzw9314/chavyleung/qtt/qtt.cookie.js
 
@@ -192,9 +204,23 @@ https:\/\/draw\.jdfcloud\.com\/\/api\/turncard\/sign\? url script-request-header
 # 电视家 (By @Macsuny)
 http:\/\/act\.gaoqingdianshi\.com\/\/api\/v4\/sign\/signin\?accelerate=0&ext=0&ticket= url script-request-header nzw9314/Task/dianshijia.js
 
-
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 # 电信流量话费 (By @uchvk)
 ^https?:\/\/e\.189\.cn\/store\/user\/package_detail\.do url script-request-header nzw9314/Task/china_telecom.js
+=======
+# 中国电信套餐 (By @uchvk & @Macsuny)
+^https?:\/\/e\.189\.cn\/store\/user\/package_detail\.do url script-request-header nzw9314/Task/telecomInfinity.js
+>>>>>>> master
+=======
+# 中国电信套餐 (By @uchvk & @Macsuny)
+^https?:\/\/e\.189\.cn\/store\/user\/package_detail\.do url script-request-header nzw9314/Task/telecomInfinity.js
+>>>>>>> master
+=======
+# 电信流量话费 (By @uchvk)
+^https?:\/\/e\.189\.cn\/store\/user\/package_detail\.do url script-request-header nzw9314/Task/china_telecom.js
+>>>>>>> master
 
 # 腾讯新闻 (By 红鲤鱼与绿鲤鱼与驴)
 http:\/\/mtrace\.qq\.com\/mkvcollect* url script-request-header nzw9314/Task/Tengxunnews.js
@@ -205,5 +231,11 @@ http:\/\/mtrace\.qq\.com\/mkvcollect* url script-request-header nzw9314/Task/Ten
 # 招行信用卡公众号 (By @iNotification)
 https://weclub\.ccc\.cmbchina.com/SCRMCustomActivityFront/checkin/request/get-home-data\.json\?activityCode=checkin url script-request-header nzw9314/Task/cmbchina.js
 
+<<<<<<< HEAD
+# 微信小程序-活动抽奖 (By @makexp & @zZPiglet)
+^https:\/\/api-hdcj\.9w9\.com\/v\d\/sign url script-request-header nzw9314/Task/WeChatLottery_new.js
+
+=======
+>>>>>>> master
 # 微信喜马拉雅 (By @makexp)
 https://m.ximalaya.com/wechat/ url script-request-header nzw9314/Task/xmly_wc.js
