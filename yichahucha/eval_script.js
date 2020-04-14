@@ -1,19 +1,27 @@
 const __conf = String.raw`
 
-
 [Remote]
 // custom remote...
-https://raw.githubusercontent.com/yichahucha/surge/master/sub_script.conf
 
 
 [Local]
 // custom local...
+# nf
+http-request ^https?://ios\.prod\.ftl\.netflix\.com/iosui/user/.+path=%5B%22videos%22%2C%\d+%22%2C%22summary%22%5D script-path=https://raw.githubusercontent.com/yichahucha/surge/master/nf_rating.js
+http-response ^https?://ios\.prod\.ftl\.netflix\.com/iosui/user/.+path=%5B%22videos%22%2C%\d+%22%2C%22summary%22%5D requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/nf_rating.js
+# jd
+http-response ^https?://api\.m\.jd\.com/client\.action\?functionId=(wareBusiness|serverConfig) requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/jd_price.js
+# tb
+http-request ^http://.+/amdc/mobileDispatch requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price.js
+http-response ^https?://trade-acs\.m\.taobao\.com/gw/mtop\.taobao\.detail\.getdetail requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/tb_price.js
+# wb
+http-response ^https?://(sdk|wb)app\.uve\.weibo\.com(/interface/sdk/sdkad.php|/wbapplua/wbpullad.lua) requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/wb_launch.js
+http-response ^https?://m?api\.weibo\.c(n|om)/2/(statuses/(unread|extend|positives/get|(friends|video)(/|_)(mix)?timeline)|stories/(video_stream|home_list)|(groups|fangle)/timeline|profile/statuses|comments/build_comments|photo/recommend_list|service/picfeed|searchall|cardlist|page|!/photos/pic_recommend_status|video/tiny_stream_video_list) requires-body=1,script-path=https://raw.githubusercontent.com/yichahucha/surge/master/wb_ad.js
 
 
 [Hostname]
 // custom hostname...
-// www.baidu.com, www.google.com
-
+api.weibo.cn, mapi.weibo.com, *.uve.weibo.com, trade-acs.m.taobao.com, api.m.jd.com, ios.prod.ftl.netflix.com
 
 `
 
@@ -32,8 +40,8 @@ const __repo = "surge"
 // GitHub 分支（不指定就使用默认分支）
 const __branch = "master"
 // GitHub 文件路径（没有文件新创建，已有文件覆盖更新，路径为空 "" 不更新）
-const __quanxPath = "eval_sub/quanx.txt"
-const __surgePath = "eval_sub/surge.txt"
+const __quanxPath = "eval_script/qx_script.txt"
+const __surgePath = "eval_script/sg_script.sgmodule"
 // GitHub 更新日志
 const __quanxCommit = "update"
 const __surgeCommit = "update"
@@ -155,9 +163,10 @@ if (__tool.isTask) {
         //update github
         .then(() => {
             if (__isUpdateGithub) {
-                const hostname = `${storeObj.confHostnames.length > 0 ? `hostname = ${Array.from(new Set(storeObj.confHostnames)).join(",")}` : ""}`
-                const quanxUpdateContent = `${hostname}\n\n${Array.from(new Set(storeObj.quanxConfContents)).join("\n\n")}`
-                const surgeUpdateContent = `${hostname}\n\n${Array.from(new Set(storeObj.surgeConfContents)).join("\n\n")}`
+                const quanxHostname = `${storeObj.confHostnames.length > 0 ? `hostname = ${Array.from(new Set(storeObj.confHostnames)).join(",")}` : ""}`
+                const surgeHostname = `${storeObj.confHostnames.length > 0 ? `hostname = %INSERT% ${Array.from(new Set(storeObj.confHostnames)).join(",")}` : ""}`
+                const quanxUpdateContent = `${quanxHostname}\n\n${Array.from(new Set(storeObj.quanxConfContents)).join("\n\n")}`
+                const surgeUpdateContent = `#!name=eval_script.js module\n\n[MITM]\n${surgeHostname}\n\n[Script]\n${Array.from(new Set(storeObj.surgeConfContents)).join("\n\n")}`
                 const args = [{ path: __quanxPath, content: quanxUpdateContent, commit: __quanxCommit }, { path: __surgePath, content: surgeUpdateContent, commit: __surgeCommit }]
                 console.log("Start updating github...")
                 const update = async () => {
@@ -503,7 +512,7 @@ function ____parseConf(lines) {
                 const result = line.match(surge)
                 // content
                 const requiresBody = ____surgeArg(result[3].trim()).requiresBody
-                surgeConfContents.splice(i, 0, `${line.replace(____surgeArg(result[3].trim()).scriptPath, "eval_script.js")}`);
+                // surgeConfContents.splice(i, 0, `${line.replace(____surgeArg(result[3].trim()).scriptPath, "eval_script.js")}`);
                 surgeConfContents.push(`eval_script.js = type=http-${result[1].trim()},${requiresBody ? `requires-body=${requiresBody},` : ""}pattern=${result[2].trim()},script-path=eval_script.js`)
                 quanxConfContents.push(`${result[2].trim()} url script-${result[1].trim()}-${requiresBody == "1" ? "body" : "header"} eval_script.js`)
                 // eval
@@ -521,7 +530,7 @@ function ____parseConf(lines) {
                         requires = 1
                     }
                 }
-                surgeConfContents.splice(i, 0, `http-${type[0].trim()} ${result[1].trim()} ${requires == 0 ? "" : `requires-body=${requires},`}script-path=eval_script.js`)
+                // surgeConfContents.splice(i, 0, `http-${type[0].trim()} ${result[1].trim()} ${requires == 0 ? "" : `requires-body=${requires},`}script-path=eval_script.js`)
                 surgeConfContents.push(`eval_script.js = type=http-${type[0].trim()},${requires == 0 ? "" : `requires-body=${requires},`}pattern=${result[1].trim()},script-path=eval_script.js`)
                 quanxConfContents.push(`${line.replace(result[3].trim(), "eval_script.js")}`)
                 // eval

@@ -13,10 +13,7 @@ if ($request && $request.method != 'OPTIONS') {
     if (signVal) senku.setdata(signVal, signKey)
     if (signXTKVal) senku.setdata(signXTKVal, signXTKKey)
     senku.msg(cookieName, `获取Cookie: 成功`, ``)
-<<<<<<< master
-=======
     senku.log(`🔔${signVal},🔔${signXTKVal}`)
->>>>>>> origin/master
   } catch (error) {
     senku.log(`❌error:${error}`)
   }
