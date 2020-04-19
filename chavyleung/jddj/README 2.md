@@ -5,6 +5,9 @@
 > 
 > 感谢 [@GideonSenku](https://github.com/GideonSenku) 对代码优化
 
+> 2020.04.16 阅读篇数奖励自动获取
+
+> 2020.04.19 添加睡觉领金币
 ## 配置 (Surge)
 
 ```properties
