@@ -4,8 +4,9 @@
 1.将下方[rewrite_local]和[MITM]地址复制的相应的区域
 下，
 2.微信搜索'来客有礼'小程序,登陆京东账号，点击'发现',即可获取Cookie.
-3. 4月26日更新，每日视频运行一次增加一次银币，未加入银豆兑换京豆功能，需手动
+3. 4月26日更新，每日视频运行一次增加一次银豆
 4.非专业人士制作，欢迎各位大佬提出宝贵意见和指导
+5.5月17日增加自动兑换京豆，需设置兑换京豆数，现可根据100、200和500设置，不可设置随机兑换数，根据页面填写兑换数值，默认设置500，注意是京豆数❗️
 
 仅测试Quantumult X
 by Macsuny
@@ -16,8 +17,17 @@ Surge 4.0 :
 lkyl.js = type=cron,cronexp=35 5 0 * * *,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/lkyl.js,script-update-interval=0
 
 # 来客有礼 Cookie.
-lkyl.js = type=http-request,pattern=https:\/\/draw\.jdfcloud\.com\/\/api\/bean\/square\/silverBean\/task\/get\?,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/lkyl.js,
+lkyl.js = type=http-request,pattern=https:\/\/draw\.jdfcloud\.com\/\/api\/bean\/square\/silverBean\/task\/get\?,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/lkyl.js
 ~~~~~~~~~~~~~~~~
+Loon 2.1.0+
+[Script]
+# 本地脚本
+cron "04 00 * * *" script-path=lkyl.js, enabled=true, tag=来客有礼
+
+http-request https:\/\/draw\.jdfcloud\.com\/\/api\/bean\/square\/silverBean\/task\/get\? script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/lkyl.js
+
+-----------------
+
 QX 1.0. 7+ :
 [task_local]
 0 9 * * * lkyl.js
@@ -30,6 +40,7 @@ hostname = draw.jdfcloud.com
 ~~~~~~~~~~~~~~~~
 
 */
+const jdbean = "500" //兑换京豆数
 const cookieName = '来客有礼小程序'
 const signurlKey = 'sy_signurl_lkyl'
 const signheaderKey = 'sy_signheader_lkyl'
@@ -57,8 +68,10 @@ if ($request && $request.method != 'OPTIONS') {
   sy.log(`signheaderVal:${signheaderVal}`)
   if (signurlVal) sy.setdata(signurlVal, signurlKey)
   if (signheaderVal) sy.setdata(signheaderVal, signheaderKey)
-     sy.setdata(openid,openkey);
-     sy.setdata(appid,appIdkey)
+  if (openid) sy.setdata(openid,openkey);
+  if (appid) sy.setdata(appid,appIdkey);
+    sy.log(`openid:${openid}`)
+    sy.log(`appid:${appid}`)
   sy.msg(cookieName, `获取Cookie: 成功🎉`, ``)
   }
  }
@@ -66,20 +79,22 @@ if ($request && $request.method != 'OPTIONS') {
 async function all() 
 { 
   await sign();
+  await award();
   await lottery();
   await status();
+  await exChange()
   await Daily();
   await weektask();
-  await total()
+  await exChange();
+  await total();
 }
-
 function sign() {
   return new Promise((resolve, reject) =>{
 	let signurl = {
 	  url: `https://draw.jdfcloud.com//api/turncard/sign?openId=${openid}&petSign=true&turnTableId=131&source=HOME&channelId=87&appId=${appid}`,
        headers:JSON.parse(signheaderVal)}
     sy.post(signurl, (error, response, data) => {
-     sy.log(`${cookieName}, data: ${data}`)
+     //sy.log(`${cookieName}, data: ${data}`)
       let result = JSON.parse(data)
       const title = `${cookieName}`
       if (result.success == true) {
@@ -106,38 +121,43 @@ function lottery() {
 	}
      daytaskurl.headers[`Content-Length`] = `0`;
     sy.get(daytaskurl, (error, response, data) => {
-    //sy.log(`${cookieName}, 今日0元抽奖 ${data}`)
-      let lotteryres = JSON.parse(data)
+    sy.log(`${cookieName}, 今日0元抽奖 ${data}`)
+    let lotteryres = JSON.parse(data)
       Incomplete = lotteryres.data.totalSteps - lotteryres.data.doneSteps
      if (Incomplete >0 ){
-     award();
-     detail += `您有${Incomplete}个0元抽奖未完成\n`
+    for (k=0;task.data.homeActivities[k].participated==false&&k<Incomplete;k++){
+       lotteryId = task.data.homeActivities[k].activityId
+       cycleLucky()
+     };
+    detail += ` 您有${Incomplete}个0元抽奖未完成\n`
      }
-     else if (Incomplete == 0 ){
-detail += `今日0元抽奖任务已完成，获得${lotteryres.data.rewardAmount}个银币\n` }
+     if (Incomplete == 0 ){
+detail += `今日0元抽奖任务已完成，获得${lotteryres.data.rewardAmount}个银豆\n` }
    resolve()
    }) 
   })
 }
-
+//视频任务次数
 function status() {
  return new Promise((resolve, reject) =>{
+   setTimeout(() => {
    let statusurl = {
 	  url: `https://draw.jdfcloud.com//api/bean/square/silverBean/task/get?openId=${openid}&appId=${appid}`,
-       headers: JSON.parse(signheaderVal)}
+     headers: JSON.parse(signheaderVal)}
      statusurl.headers['Content-Length'] = `0`;
    sy.get(statusurl, (error, response, data) =>{
-     sy.log(`${cookieName}, data: ${data}`)
+  //sy.log(`${cookieName}, data: ${data}`)
      taskstatus = JSON.parse(data)
    if (taskstatus.data.dailyTasks[1].status!='received'){
-    for (i=0;i<3;i++){
+    for (i=0;i<4;i++){
       video() 
        }
       }
    else if (taskstatus.data.dailyTasks[1].status=='received'){
-   detail += `视频任务已完成，获得${taskstatus.data.dailyTasks[1].taskReward}个银币` }
-  })
+   detail += `视频任务已完成，获得${taskstatus.data.dailyTasks[1].taskReward}个银豆` } 
    resolve()
+    })
+   },1000)
   })
 }
 //每日视频
@@ -162,30 +182,30 @@ resolve()
  })
 }
 
-//0元抽奖循环
+// 0元抽奖
 function award() {
    return new Promise((resolve, reject) =>{
-	 let weektaskurl = {
+	 let taskurl = {
 		url: `https://draw.jdfcloud.com//api/lottery/home/v2?openId=${openid}&appId=${appid}`,
 		headers: JSON.parse(signheaderVal)}
-     weektaskurl.headers['Content-Length'] = `0`;
-    sy.get(weektaskurl, (error, response, data) => {
-     //sy.log(`${cookieName}, data: ${data}`)
-      result = JSON.parse(data)
-    if (result.success == true) {
-      for (k=0;result.data.homeActivities[k].participated==false&&k<Incomplete;k++){
-        lotteryId = result.data.homeActivities[k].activityId
-    let awardurl = {  
+     taskurl.headers['Content-Length'] = `0`;
+    sy.get(taskurl, (error, response, data) => {
+     //sy.log(`${cookieName}, 任务列表: ${data}`)
+    task = JSON.parse(data)
+    uesername = `${task.data.userPin}`
+    resolve()
+  })
+ })
+}
+function cycleLucky() {
+   return new Promise((resolve, reject) =>{
+    let luckyurl = {  
          url: `https://draw.jdfcloud.com//api/lottery/participate?lotteryId=${lotteryId}&openId=${openid}&formId=123&source=HOME&appId=${appid}`,headers: JSON.parse(signheaderVal),body: '{}'
 }
-   sy.post(awardurl, (error, response, data) =>
-    {
-     //sy.log(`${cookieName}, 抽奖任务: ${data}`)
-               });
-             }
-       resolve()
-          }
-       })
+ sy.post(luckyurl, (error, response, data) => {
+ //sy.log(`${cookieName}, 抽奖任务循环: ${data}`)
+         })
+     resolve()
     })
   }
 
@@ -248,7 +268,7 @@ function total() {
     for (k=0; k < result.datas.length;k++){
     if (result.datas[k].salePrice >= SilverBean && SilverBean > result.datas[k-1].salePrice)
      {
-      subTitle += `${result.datas[k-1].memo}(手动兑换)`}
+      subTitle += `${result.datas[k-1].salePrice}银豆兑换${result.datas[k-1].productName}`}
 
     }
    } else if (SilverBean < result.datas[0].salePrice) 
@@ -257,12 +277,31 @@ function total() {
     }
 else if (SilverBean = result.datas[0].salePrice) 
     { 
-       subTitle +=`${result.datas[0].memo}(手动兑换)`
+       subTitle +=`${result.datas[k-1].salePrice}银豆兑换${result.datas[k-1].productName}`
     }
-    sy.msg(cookieName+res, subTitle, detail)
+    sy.msg(cookieName+res, subTitle, '昵称: '+ uesername+' '+detail)
     })
+   resolve()
    })
  })
+}
+//兑换京豆
+function exChange() {
+  return new Promise((resolve, reject) => {
+  let changeurl = {
+      url: `https://draw.jdfcloud.com//api/bean/square/silverBean/exchange?appId=${appid}`,
+      headers: JSON.parse(signheaderVal),
+      body:  '{"appId":'+' "'+appid+'"'+', "openId":'+' "'+openid+'"'+', "jdPin":'+' "'+uesername+'"'+', "productCode":"jd_bean_'+jdbean+'"}'
+ }
+  sy.post(changeurl, (error, response,data) =>{
+    sy.log(`${cookieName}, 兑换京豆: ${data}`)
+    let result = JSON.parse(data)
+    if (result.errorCode== "success"){
+      detail += '成功兑换'+result.data+'个京豆'
+     }
+    })
+  resolve()
+  })
 }
 function init() {
   isSurge = () => {
