@@ -97,7 +97,7 @@ const $hammer = (() => {
 })();
 
 //直接用NobyDa的jd cookie
-const cookie = $hammer.read('CookieJD')
+const cookie = $hammer.read('CookieJD2')
 const name = '京东种豆得豆'
 
 //京东接口地址

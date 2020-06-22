@@ -88,7 +88,7 @@ const $hammer = (() => {
 //京东接口地址
 const JD_API_HOST = 'https://api.m.jd.com/client.action';
 //直接用NobyDa的js cookie
-const cookie = $hammer.read('CookieJD');
+const cookie = $hammer.read('CookieJD2');
 
 var shareCodes = [ // 这个列表填入你要助力的好友的shareCode, 最多可能是5个? 没有验证过
     'MTAxODcxOTI2NTAwMDAwMDAwMDc4MDExNw==',
