@@ -1,20 +1,24 @@
 /*
+更新时间: 2020-06-08 20:45
 
 赞赏:中青邀请码`46308484`,农妇山泉 -> 有点咸，万分感谢
 
 本脚本仅适用于中青看点极速版领取青豆
 
-增加每日打卡，打卡时间每日5:00-8:00❗️，请不要忘记设置运行时间，共4条Cookie，请全部获取，获取请注释掉
+增加每日打卡，打卡时间每日5:00-8:00❗️，请不要忘记设置运行时间，共3条Cookie，请全部获取，获取请注释掉
 
 获取Cookie方法:
 1.将下方[rewrite_local]和[MITM]地址复制的相应的区域
 下，
-2.进入app，进入任务中心或者签到一次,即可获取Cookie. 阅读一篇文章，获取阅读请求body，在阅读文章最下面有个惊喜红包，点击获取惊喜红包请求，激励视频获取方法: 关闭vpn，进入任务中心=>抽奖赚点击下面第一个宝箱，出现视频广告页面，然后打开vpn，等待视频播放完毕，点击点我继续领青豆，再重复一次上面操作，获取激励视频请求的body，
-3.当日签过到无需次日获取Cookie.
+2.进入app，进入任务中心或者签到一次,即可获取Cookie. 阅读一篇文章，获取阅读请求body，并获取阅读时长，在阅读文章最下面有个惊喜红包，点击获取惊喜红包请求
+3.可随时获取Cookie.
 4.增加转盘抽奖通知间隔，为了照顾新用户，前五次会有通知，以后默认每10次转盘抽奖通知一次，可自行修改❗️ 转盘完成后通知会一直开启
 5.非专业人士制作，欢迎各位大佬提出宝贵意见和指导
+6.更新日志: 
+ 31/05 v1.01 取消激励视频Cookie，添加阅读时长
 
 阅读奖励和看视频得奖励一个请求只能运行三次‼️，请不要询问为什么，次日可以继续
+
 
 仅测试Quantumult X
 by Macsuny
@@ -26,11 +30,11 @@ Surge 4.0 :
 
 中青看点 = type=http-request,pattern=https:\/\/\w+\.youth\.cn\/TaskCenter\/(sign|getSign),script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js
 
-中青看点 = type=http-request,pattern=https:\/\/ios\.baertt\.com\/v5\/Game\/GameVideoReward,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
-
 中青看点 = type=http-request,pattern=https:\/\/ios\.baertt\.com\/v5\/article\/complete,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
 
 中青看点 = type=http-request,pattern=https:\/\/ios\.baertt\.com\/v5\/article\/red_packet,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
+
+中青看点 = type=http-request,pattern=https:\/\/ios\.baertt\.com\/v5\/user\/app_stay\.json,script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
 
 ~~~~~~~~~~~~~~~~
 Loon 2.1.0+
@@ -39,9 +43,9 @@ Loon 2.1.0+
 cron "04 00 * * *" script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, enabled=true, tag=中青看点
 
 http-request https:\/\/\w+\.youth\.cn\/TaskCenter\/(sign|getSign) script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js
-http-request https:\/\/ios\.baertt\.com\/v5\/Game\/GameVideoReward script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
 http-request https:\/\/ios\.baertt\.com\/v5\/article\/complete script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
 http-request https:\/\/ios\.baertt\.com\/v5\/article\/red_packet script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
+http-request https:\/\/ios\.baertt\.com\/v5\/user\/app_stay\.json script-path=https://raw.githubusercontent.com/Sunert/Scripts/master/Task/youth.js, requires-body=true
 -----------------
 QX 1.0. 7+ :
 [task_local]
@@ -52,9 +56,9 @@ https:\/\/\w+\.youth\.cn\/TaskCenter\/(sign|getSign) url script-request-header y
 
 https?:\/\/ios\.baertt\.com\/v5\/article\/complete url script-request-body youth.js
 
-https?:\/\/ios\.baertt\.com\/v5\/Game\/GameVideoReward url script-request-body youth.js
-
 https:\/\/ios\.baertt\.com\/v5\/article\/red_packet url script-request-body youth.js
+
+https:\/\/ios\.baertt\.com\/v5\/user\/app_stay\.json url script-request-body youth.js
 
 ~~~~~~~~~~~~~~~~
 [MITM]
@@ -66,17 +70,14 @@ const notifyInterval = `10`  //通知间隔，默认抽奖每10次通知一次
 const logs = 0;   //0为关闭日志，1为开启
 const CookieName = "中青看点"
 const signheaderKey = 'youthheader_zq'
-const gamebodyKey = 'youthgame_zq'
 const articlebodyKey = 'read_zq'
 const redpbodyKey = 'red_zq'
-const infourlKey = 'shareurl_zq'
+const timebodyKey = 'readtime_zq'
 const sy = init()
 const signheaderVal = sy.getdata(signheaderKey)
-const gamebodyVal = sy.getdata(gamebodyKey)
 const redpbodyVal = sy.getdata(redpbodyKey)
 const articlebodyVal = sy.getdata(articlebodyKey)
-const infourlVal = sy.getdata(infourlKey)
-
+const timebodyVal = sy.getdata(timebodyKey)
 let isGetCookie = typeof $request !== 'undefined'
 if (isGetCookie) {
    GetCookie()
@@ -97,11 +98,11 @@ else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/articl
     sy.log(`[${CookieName}] 获取阅读: 成功,articlebodyVal: ${articlebodyVal}`)
     sy.msg(CookieName, `获取阅读请求: 成功🎉`, ``)
   }
-  else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/v5\/Game/)) {
-   const gamebodyVal = $request.body
-    if (gamebodyVal)        sy.setdata(gamebodyVal,gamebodyKey)
-    sy.log(`[${CookieName}] 获取激励视频: 成功,gamebodyVal: ${gamebodyVal}`)
-    sy.msg(CookieName, `获取激励视频请求: 成功🎉`, ``)
+else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/v5\/user\/app_stay/)) {
+   const timebodyVal = $request.body
+    if (timebodyVal)        sy.setdata(timebodyVal,timebodyKey)
+    sy.log(`[${CookieName}] 获取阅读: 成功,timebodyVal: ${timebodyVal}`)
+    sy.msg(CookieName, `获取阅读时长: 成功🎉`, ``)
   }
 else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/article\/red_packet/)) {
    const redpbodyVal = $request.body
@@ -109,13 +110,6 @@ else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/articl
     sy.log(`[${CookieName}] 获取惊喜红包: 成功,redpbodyVal: ${redpbodyVal}`)
     sy.msg(CookieName, `获取惊喜红包请求: 成功🎉`, ``)
   }
-else if ($request && $request.method != `OPTIONS`&& $request.url.match(/\/article\/s/)) {
-   const shareurlVal = $request.url
-    if (shareurlVal)        sy.setdata(shareurlVal,shareurlKey)
-    sy.log(`[${CookieName}] 获取文章分享地址: 成功,shareurlVal: ${shareurlVal}`)
-    sy.msg(CookieName, `获取文章分享地址: 成功🎉`, ``)
-  }
-
  }
  
 async function all() 
@@ -134,12 +128,13 @@ async function all()
   await openbox();
   await share();
   await readArticle();
+  await readTime();
   await earningsInfo();
   await showmsg();
 }
 
 function sign() {      
-  return new Promise((resolve, reject) =>
+ return new Promise((resolve, reject) =>
    {
     const signurl = { 
       url: 'https://kd.youth.cn/TaskCenter/sign', 
@@ -156,8 +151,14 @@ function sign() {
           signresult = `【签到信息】重复`
           detail= ``
          }
+        else if(signres.status == 2){
+         signresult = `签到失败，Cookie已失效‼️`
+         detail= ``
+         sy.msg(CookieName,signresult,detail)
+         return
+         }
+       resolve()
        })
-    resolve()
      })
   }
       
@@ -186,9 +187,9 @@ function signInfo() {
   }
 
 function Invitant() {      
-  return new Promise((resolve, reject) => {
-    const url = { 
-      url: `https://kd.youth.cn/WebApi/User/fillCode`, 
+ return new Promise((resolve, reject) => {
+   const url = { 
+     url: `https://kd.youth.cn/WebApi/User/fillCode`, 
      headers: JSON.parse(signheaderVal),
      body: `{"code": "46308484"}`,
 }
@@ -212,7 +213,7 @@ function getAdVideo() {
    if(logs) sy.log(`视频广告:${data}`)
    adVideores = JSON.parse(data)
    if (adVideores.status==1){
-      detail += `【观看视频】+${adVideores.score}个青豆\n` }
+      detail += `【观看视频】  +${adVideores.score}个青豆\n` }
    })
 resolve()
  })
@@ -220,16 +221,16 @@ resolve()
 // 点我激励视频奖励
 function gameVideo() {      
  return new Promise((resolve, reject) => {
-    const url = { 
+   const url = { 
       url: `https://ios.baertt.com/v5/Game/GameVideoReward.json`, 
-      body: gamebodyVal,
+      body: articlebodyVal,
 }
    sy.post(url, (error, response, data) =>
  {
-   if(logs) sy.log(`激励视频:${data}`)
+    if(logs) sy.log(`激励视频:${data}`)
    gameres = JSON.parse(data)
    if (gameres.success==true){
-     detail += `【激励视频】${gameres.items.score}\n`}
+     detail += `【激励视频】  ${gameres.items.score}\n`}
     })
   resolve()
   })
@@ -250,7 +251,7 @@ function readArticle() {
      //detail += ` \u770b\u592a\u4e45\u4e86\uff0c\u63621\u7bc7\u8bd5\u8bd5，`
      }
   else if (readres.items.read_score !== undefined){
-     detail += `【阅读奖励】+${readres.items.read_score}个青豆\n`
+     detail += `【阅读奖励】  +${readres.items.read_score}个青豆\n`
      }
   resolve()
    })
@@ -267,7 +268,7 @@ function Articlered() {
    if(logs) sy.log(`阅读附加:${data}`)
    redres = JSON.parse(data)
    if (redres.success==true){
-     detail += `【惊喜红包】+${redres.items.score}个青豆\n`  
+     detail += `【惊喜红包】  +${redres.items.score}个青豆\n`  
      }
   resolve()
    })
@@ -288,7 +289,7 @@ function rotary() {
    if(logs) sy.log(`转盘抽奖:${data}`)
    rotaryres = JSON.parse(data)
    if (rotaryres.status==1){
-     detail += `【转盘抽奖】+${rotaryres.data.score}个青豆 剩余${rotaryres.data.remainTurn}次\n`  
+     detail += `【转盘抽奖】  +${rotaryres.data.score}个青豆 剩余${rotaryres.data.remainTurn}次\n`  
     }
    if(rotaryres.code!=10010&&rotaryres.data.doubleNum!=0){
       TurnDouble()
@@ -336,7 +337,7 @@ const rotarbody = signheaderVal.split("&")[15]+'&'+signheaderVal.split("&")[8]+'
    if(logs) sy.log(`转盘宝箱1抽奖:${data}`)
    rotaryres1 = JSON.parse(data)
    if (rotaryres1.status==1){
-     detail += `【转盘宝箱1】+${rotaryres4.data.score}个青豆\n`
+     detail += `【转盘宝箱1】  +${rotaryres4.data.score}个青豆\n`
        }
      })
    resolve()
@@ -358,7 +359,7 @@ const rotarbody = signheaderVal.split("&")[15]+'&'+signheaderVal.split("&")[8]+'
    if(logs) sy.log(`转盘宝箱2抽奖:${data}`)
    rotaryres2 = JSON.parse(data)
    if (rotaryres2.status==1){
-     detail +=  `【转盘宝箱2】+${rotaryres4.data.score}个青豆\n`
+     detail +=  `【转盘宝箱2】  +${rotaryres4.data.score}个青豆\n`
        }
      })
    resolve()
@@ -380,7 +381,7 @@ const rotarbody = signheaderVal.split("&")[15]+'&'+signheaderVal.split("&")[8]+'
    if(logs) sy.log(`转盘宝箱3抽奖:${data}`)
    rotaryres3 = JSON.parse(data)
    if (rotaryres3.status==1){
-     detail += `【转盘宝箱3】+${rotaryres4.data.score}个青豆\n` 
+     detail += `【转盘宝箱3】  +${rotaryres4.data.score}个青豆\n` 
        }
      })
    resolve()
@@ -402,7 +403,7 @@ const rotarbody = signheaderVal.split("&")[15]+'&'+signheaderVal.split("&")[8]+'
    if(logs) sy.log(`转盘宝箱4抽奖:${data}`)
    rotaryres4 = JSON.parse(data)
    if (rotaryres4.status==1){
-     detail += `【转盘宝箱4】+${rotaryres4.data.score}个青豆\n`  
+     detail += `【转盘宝箱4】  +${rotaryres4.data.score}个青豆\n`  
        }
      })
    resolve()
@@ -421,7 +422,7 @@ function punchCard() {
    if(logs) sy.log(`每日开启打卡:${data}`)
    punchcardstart = JSON.parse(data)
    if (punchcardstart.code==1){
-     detail += `【打卡报名】${punchcardstart.msg} ✅ \n`  
+     detail += `【打卡报名】  开启打卡${punchcardstart.msg} ✅ \n`  
        }
     else if(punchcardstart.code==0){
      //detail += `${punchcardstart.msg}`
@@ -444,7 +445,7 @@ function endCard() {
    if(logs) sy.log(`打卡结果:${data}`)
    punchcardend = JSON.parse(data)
    if (punchcardend.code==1){
-     detail += `【早起打卡】${punchcardend.msg}打卡时间: ${punchcardend.data.card_time} ✅`  
+     detail += `【早起打卡】  ${punchcardend.msg}打卡时间: ${punchcardend.data.card_time} ✅`  
        }
     else if(punchcardend.code==0){
      //detail += `${punchcardend.msg}`
@@ -477,7 +478,7 @@ const starturl = {
    if(logs) sy.log(`打卡分享:${data}`)
    shareres = JSON.parse(data)
    if (shareres.code==1){
-     detail += `【手机分享】+${shareres.data.score}个青豆\n`  
+     detail += `【手机分享】  +${shareres.data.score}个青豆\n`  
        }
     else if(shareres.code==0){
      //detail += `${shareres.msg}，`
@@ -500,7 +501,7 @@ function openbox() {
    if(logs) sy.log(`时段开启宝箱:${data}`)
    boxres = JSON.parse(data)
    if (boxres.code==1){
-     detail += `【开启宝箱】+${boxres.data.score}个青豆 下次奖励${boxres.data.time/60}分钟\n`  
+     detail += `【开启宝箱】  +${boxres.data.score}个青豆 下次奖励${boxres.data.time/60}分钟\n`  
        }
     else if(boxres.code==0){
      //detail += `${boxres.msg}，`
@@ -523,7 +524,7 @@ function share() {
    if(logs) sy.log(`宝箱分享:${data}`)
    shareres = JSON.parse(data)
    if (shareres.code==1){
-     detail += `【宝箱分享】+${shareres.data.score}个青豆\n`  
+     detail += `【宝箱分享】  +${shareres.data.score}个青豆\n`  
        }
     else if(shareres.code==0){
      //detail += `${shareres.msg}，`
@@ -549,32 +550,31 @@ function TurnDouble() {
    if(logs) sy.log(`转盘双倍奖励:${data}`)
    Doubleres = JSON.parse(data)
    if(Doubleres.status==1){
-     detail += `【转盘双倍】+${Doubleres.data.score1}个青豆 剩余${rotaryres.data.doubleNum}次\n`};
+     detail += `【转盘双倍】  +${Doubleres.data.score1}个青豆 剩余${rotaryres.data.doubleNum}次\n`};
     })
    resolve()
   })
  })
 }
 
-function articleShare() {      
+function readTime() {      
  return new Promise((resolve, reject) => {
-  setTimeout(() =>  {
     const url = { 
-      url: shareurlVal, 
-      headers: signheaderVal,
+      url: `https://ios.baertt.com/v5/user/stay.json`, 
+      body: timebodyVal,
 }
-  sy.get(url, (error, response, data) =>{
-   if(logs) sy.log(`文章分享:${data}`)
-   shareres = JSON.parse(data)
-   if (shareres.success==true){
-     //detail += `${shareres.message}，获得${shareres.score_text}`  
+  sy.post(url, (error, response, data) =>{
+    if(logs) sy.log(`阅读时长:${data}`)
+    let timeres = JSON.parse(data)
+   if (timeres.error_code==0){
+     readtimes = timeres.time/60
+     detail += `【阅读时长】  共计`+Math.floor(readtimes)+`分钟\n`  
        }
-    else if(shareres.success==false){
-     //detail += `${shareres.message}，`
+    else if(timeres.error_code==200001){
+     detail += `【阅读时长】 ❎  未获取阅读时长Cookie\n`  
        }
      })
    resolve()
-   })
  })
 }
 

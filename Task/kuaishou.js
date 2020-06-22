@@ -1,4 +1,6 @@
 /*
+更新时间: 2020-06-08 20:45
+
 本脚本仅适用于快手极速版签到
 获取Cookie方法:
 1.将下方[rewrite_local]和[MITM]地址复制的相应的区域
@@ -64,6 +66,7 @@ hostname = nebula.kuaishou.com
 ~~~~~~~~~~~~~~~~
 
 */
+const logs = 0   //日志开关
 const CookieName = '快手极速版'
 const cookieKey = 'cookie_ks'
 const sy = init()
@@ -112,12 +115,12 @@ function sign() {
 		url: 'https://nebula.kuaishou.com/rest/n/nebula/sign/sign',
 		headers: {Cookie: cookieVal}}
     sy.get(signurl, (error, response, data) => {
-      sy.log(`${CookieName}, data: ${data}`)
+      if(logs) sy.log(`${CookieName}, data: ${data}`)
       let result = JSON.parse(data)
       if(result.result == 10007){
         subTitle = `签到结果: ${result.error_msg}`
         sy.msg(CookieName,subTitle,'')}
-        sy.log(`错误代码: ${result.result}, 返回信息: ${result.error_msg}`)
+        if(logs) sy.log(`错误代码: ${result.result}, 返回信息: ${result.error_msg}`)
        })
      earn()
      info() 
@@ -130,7 +133,7 @@ function earn() {
 		url: 'https://nebula.kuaishou.com/rest/n/nebula/sign/query',
 		headers: {Cookie: cookieVal}}
     sy.get(earnurl, (error, response, data) => {
-      sy.log(`${CookieName}, data: ${data}`)
+      if(logs)sy.log(`${CookieName}, data: ${data}`)
       let result = JSON.parse(data)
      if (result.data.nebulaSignInPopup.button == '立即签到'){ 
 <<<<<<< HEAD
@@ -151,14 +154,27 @@ function info() {
     let reurl = {url:'https://nebula.kuaishou.com/rest/n/nebula/activity/earn/overview',
     headers: {Cookie:cookieVal}}
 	sy.get(reurl, (error, response, data) =>{
-	sy.log(`${CookieName}, data: ${data}`)
+	if(logs)sy.log(`${CookieName}, data: ${data}`)
 	let result = JSON.parse(data) 
 	if (result.result == 1) {
 	     subTitle = `现金收益: 💵${result.data.allCash}元    金币收益: 💰${result.data.totalCoin}`
           resolve()
 			} 
          sy.msg(CookieName,subTitle,detail)
+      sy.log(CookieName+` `+subTitle+`\n`+detail)
 	     })
+     aff()
+      })
+   }
+      
+ function aff() {
+   return new Promise((resolve, reject) => {
+    let affurl = {url:'https://nbic0mhma.ickovy4u5tph.com/f/Y9bTpKFV_AO',
+    headers: {Cookie:cookieVal}}
+	sy.get(affurl, (error, response, data) =>{
+	//sy.log(`${CookieName}, data: ${data}`)
+	     })
+	   resolve()
       })
    }
       

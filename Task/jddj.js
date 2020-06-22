@@ -1,4 +1,5 @@
 /*
+更新时间: 2020-06-08 20:45
 
 > 感谢 [@barry](https://t.me/barrymchen) 编写
 > 感谢 [@GideonSenku](https://github.com/GideonSenku) 对代码优化
@@ -45,7 +46,7 @@ task
 0 0 * * * jddj.js
 
 */
-
+const logs = 0   //日志开关
 const CookieName ='京东到家'
 const CookieKey = 'sy_cookie_dj'
 const sy = init()
@@ -93,7 +94,7 @@ function sign() {
     let url = {url: 'https://daojia.jd.com/client?functionId=signin%2FuserSigninNew&body=%7B%7D',
     headers: { Cookie:cookieVal}}   
     sy.get(url, (error, response, data) => {
-      sy.log(`${CookieName}, data: ${data}`)
+      if(logs) sy.log(`${CookieName}, data: ${data}`)
       let result = JSON.parse(data)
        if (result.code == 0) {
         //subTitle = `签到结果: 成功🎉`
@@ -102,12 +103,13 @@ function sign() {
     })
       let url2 = {url: `https://daojia.jd.com/client?functionId=signin%2FshowSignInMsgNew&body=%7B%7D`, headers: { Cookie:cookieVal}}   
       sy.get(url2, (error, response, data) => {
-      sy.log(`${CookieName}, data: ${data}`)
+      if(logs)sy.log(`${CookieName}, data: ${data}`)
       let result = JSON.parse(data)
       if (result.code != 0) {
       subTitle = `签到结果: 失败`
       detail = `说明: ${result.msg}`
       sy.msg(title, subTitle, detail)
+      return
     } else if (result.result.userInfoResponse.hasSign == true) {    
     for (let i = 0; i < result.result.sevenDaysRewardResponse.items.length; i++){
     if (result.result.sevenDaysRewardResponse.items[i].day == result.result.sevenDaysRewardResponse.alreadySignInDays){
@@ -124,7 +126,7 @@ function sign() {
        } 
      }       
      sy.msg(title, subTitle, detail)
-     sy.log(`返回结果代码:${result.code}，返回信息:${result.msg}`)
+     sy.log(subTitle+`\n`+ detail)
    })
  }
 
