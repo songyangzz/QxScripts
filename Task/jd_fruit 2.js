@@ -230,7 +230,7 @@ function* step() {
                     //助力成功
                     salveHelpAddWater += helpResult.helpResult.salveHelpAddWater;
                     console.log(`【助力好友结果】: 已成功给【${helpResult.helpResult.masterUserInfo.nickName}】助力`);
-                    helpSuccessPeoples += response.result.masterNickName + '，';
+                    helpSuccessPeoples += helpResult.helpResult.masterUserInfo.nickName + '，';
                 } else if (helpResult.helpResult.code === '8'){
                     console.log(`【助力好友结果】: 助力【${helpResult.helpResult.masterUserInfo.nickName}】失败，您今天助力次数已耗尽`);
                 } else if (helpResult.helpResult.code === '9'){
@@ -311,7 +311,7 @@ function* step() {
           for (let i = 0; i < parseInt(overageEnergy / 10); i++){
             let res = yield waterGoodForFarm();
             if (res.totalEnergy <= 100) {
-              console.log('目前水滴【${res.totalEnergy}】g，不再继续浇水')
+              console.log(`目前水滴【${res.totalEnergy}】g，不再继续浇水`)
             } else {
               console.log(`目前剩余水滴：【${res.totalEnergy}】g，可继续浇水`);
             }
@@ -328,77 +328,77 @@ function* step() {
         } else {
         }
         message += `【剩余水滴】${farmInfo.farmUserPro.totalEnergy}g\n`
-        //集卡抽奖活动
-        console.log('开始集卡活动')
-
-        //初始化集卡抽奖活动数据
-        let turntableFarm = yield initForTurntableFarm()
-        if (turntableFarm.code == 0) {
-            //浏览爆品任务
-            if (!turntableFarm.turntableBrowserAdsStatus) {
-                let browserResult1 = yield browserForTurntableFarm(1);
-                console.log(`浏览爆品任务结果${JSON.stringify(browserResult1)}`)
-                if (browserResult1.code == 0) {
-                    let browserResult2 = yield browserForTurntableFarm(2);
-                    console.log(`领取爆品任务奖励结果${JSON.stringify(browserResult2)}`)
-                }
-            }
-            //领取定时奖励 //4小时一次 没判断时间
-            if (!turntableFarm.timingGotStatus) {
-                let timingAward = yield timingAwardForTurntableFarm();
-                console.log(`领取定时奖励结果${JSON.stringify(timingAward)}`)
-            }
-            turntableFarm = yield initForTurntableFarm()
-            console.log('开始抽奖')
-            //抽奖
-            if (turntableFarm.remainLotteryTimes > 0) {
-                let lotteryResult = "【集卡抽奖】获得"
-                for (let i = 0; i < turntableFarm.remainLotteryTimes; i++) {
-                    let lottery = yield lotteryForTurntableFarm()
-                    console.log(`第${i + 1}次抽奖结果${JSON.stringify(lottery)}`)
-
-                    if (lottery.code == 0) {
-                        if (lottery.type == "water") {
-                            lotteryResult += `水滴${lottery.addWater}g `
-                        } else if (lottery.type == "pingguo") {
-                            lotteryResult += "苹果卡 "
-                        } else if (lottery.type == "baixiangguo") {
-                            lotteryResult += "百香果卡 "
-                        } else if (lottery.type == "mangguo") {
-                            lotteryResult += "芒果卡 "
-                        } else if (lottery.type == "taozi") {
-                            lotteryResult += "桃子卡 "
-                        } else if (lottery.type == "mihoutao") {
-                            lotteryResult += "猕猴桃卡 "
-                        } else if (lottery.type == "pingguo") {
-                            lotteryResult += "苹果卡 "
-                        } else if (lottery.type == "coupon") {
-                            lotteryResult += "优惠券 "
-                        } else if (lottery.type == "coupon3") {
-                            lotteryResult += "8斤金枕榴莲 "
-                        } else if (lottery.type == "bean") {
-                            lotteryResult += `京豆${lottery.beanCount}个 `
-                        } else if (lottery.type == "hongbao1") {
-                            lotteryResult += `${lottery.hongBao.balance}元无门槛红包 `
-                        } else {
-                            lotteryResult += `未知奖品${lottery.type} `
-                        }
-                        //没有次数了
-                        if (lottery.remainLotteryTimes == 0) {
-                            break
-                        }
-                    }
-
-                }
-                message += lotteryResult
-            }
-            console.log('抽奖结束')
-
-        } else {
-            console.log(`初始化集卡抽奖活动数据异常, 数据: ${JSON.stringify(farmInfo)}`);
-            message += '【集卡抽奖】初始化集卡抽奖数据异常'
-        }
-        console.log('集卡活动抽奖结束')
+//        //集卡抽奖活动
+//        console.log('开始集卡活动')
+//
+//        //初始化集卡抽奖活动数据
+//        let turntableFarm = yield initForTurntableFarm()
+//        if (turntableFarm.code == 0) {
+//            //浏览爆品任务
+//            if (!turntableFarm.turntableBrowserAdsStatus) {
+//                let browserResult1 = yield browserForTurntableFarm(1);
+//                console.log(`浏览爆品任务结果${JSON.stringify(browserResult1)}`)
+//                if (browserResult1.code == 0) {
+//                    let browserResult2 = yield browserForTurntableFarm(2);
+//                    console.log(`领取爆品任务奖励结果${JSON.stringify(browserResult2)}`)
+//                }
+//            }
+//            //领取定时奖励 //4小时一次 没判断时间
+//            if (!turntableFarm.timingGotStatus) {
+//                let timingAward = yield timingAwardForTurntableFarm();
+//                console.log(`领取定时奖励结果${JSON.stringify(timingAward)}`)
+//            }
+//            turntableFarm = yield initForTurntableFarm()
+//            console.log('开始抽奖')
+//            //抽奖
+//            if (turntableFarm.remainLotteryTimes > 0) {
+//                let lotteryResult = "【集卡抽奖】获得"
+//                for (let i = 0; i < turntableFarm.remainLotteryTimes; i++) {
+//                    let lottery = yield lotteryForTurntableFarm()
+//                    console.log(`第${i + 1}次抽奖结果${JSON.stringify(lottery)}`)
+//
+//                    if (lottery.code == 0) {
+//                        if (lottery.type == "water") {
+//                            lotteryResult += `水滴${lottery.addWater}g `
+//                        } else if (lottery.type == "pingguo") {
+//                            lotteryResult += "苹果卡 "
+//                        } else if (lottery.type == "baixiangguo") {
+//                            lotteryResult += "百香果卡 "
+//                        } else if (lottery.type == "mangguo") {
+//                            lotteryResult += "芒果卡 "
+//                        } else if (lottery.type == "taozi") {
+//                            lotteryResult += "桃子卡 "
+//                        } else if (lottery.type == "mihoutao") {
+//                            lotteryResult += "猕猴桃卡 "
+//                        } else if (lottery.type == "pingguo") {
+//                            lotteryResult += "苹果卡 "
+//                        } else if (lottery.type == "coupon") {
+//                            lotteryResult += "优惠券 "
+//                        } else if (lottery.type == "coupon3") {
+//                            lotteryResult += "8斤金枕榴莲 "
+//                        } else if (lottery.type == "bean") {
+//                            lotteryResult += `京豆${lottery.beanCount}个 `
+//                        } else if (lottery.type == "hongbao1") {
+//                            lotteryResult += `${lottery.hongBao.balance}元无门槛红包 `
+//                        } else {
+//                            lotteryResult += `未知奖品${lottery.type} `
+//                        }
+//                        //没有次数了
+//                        if (lottery.remainLotteryTimes == 0) {
+//                            break
+//                        }
+//                    }
+//
+//                }
+//                message += lotteryResult
+//            }
+//            console.log('抽奖结束')
+//
+//        } else {
+//            console.log(`初始化集卡抽奖活动数据异常, 数据: ${JSON.stringify(farmInfo)}`);
+//            message += '【集卡抽奖】初始化集卡抽奖数据异常'
+//        }
+//        console.log('集卡活动抽奖结束')
 
         console.log('全部任务结束');
     } else {
