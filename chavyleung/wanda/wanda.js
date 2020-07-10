@@ -1,9 +1,15 @@
 const $ = new Env('万达电影')
 $._mi_ = 'senku_wanda_mi_'
 $.desc = []
-const ts = new Date().getTime()
-const date = tTime(ts)
-const key = 'Wanda1_3B3AA12B0145E1982F282BEDD8A3305B89A9811280C0B8CC3A6A60D81022E4903'+ts
+$.signCode = '17787285'
+$.questionCode = '15884027'
+const date = tTime(new Date().getTime())
+
+function getKey(){
+    const ts = new Date().getTime()
+    const key = 'Wanda1_3B3AA12B0145E1982F282BEDD8A3305B89A9811280C0B8CC3A6A60D81022E4903'+ts
+    return {'key':key,'ts':ts}
+}
 const mx_api = {
     "ver":"v1.0.0",
     "sCode":"Wanda",
@@ -12,7 +18,7 @@ const mx_api = {
     "json":true,
     "cCode":"1_3",
     "check":'',
-    "ts":ts,
+    "ts":0,
     "heigth":720,
     "appId":"3"
 }
@@ -20,10 +26,14 @@ const mx_api = {
 !(async () => {
     await sign()
     await signRecord()
-    await question()
-    await answer()
-    await drawprize_ans()
-    await drawprize_ans()
+    // await question_()
+    // await question()
+    // await answer()
+    // await drawprize_ans()
+    // await drawprize_ans()
+    if ($.signRecord.data.remainMedal >= 50 ) {
+        await lottery()
+    }
     await showmsg()
   })()
     .catch((e) => $.logErr(e))
@@ -33,14 +43,15 @@ const mx_api = {
 
 function sign() {
     return new Promise((resolve) => {
-        const signVal = key+'/activityWholeSign/wholeSignUp.apiactivityCode=12786638&signDate='+date
+        const signVal = getKey()['key'] + '/activityWholeSign/wholeSignUp.apiactivityCode='+$.signCode+'&signDate='+date
+        mx_api['ts'] = getKey()['ts']
         mx_api['check'] = hex_md5(signVal)
         const url = {
             url:'https://activity-api-mx.wandafilm.com/activityWholeSign/wholeSignUp.api',
             headers:{
                 'MX-API':JSON.stringify(mx_api),
             },
-            body : 'activityCode=12786638&signDate=' + date
+            body : 'activityCode='+$.signCode+'&signDate=' + date
             }
         $.post(url, (err, resp, data) => {
             try {
@@ -56,14 +67,15 @@ function sign() {
 
 function signRecord() {
     return new Promise((resolve) => {
-        const signRecordVal = key+'/activityWholeSign/getSignRecord.apiactivityCode=12786638'
+        const signRecordVal = getKey()['key']+'/activityWholeSign/getSignRecord.apiactivityCode='+$.signCode
+        mx_api['ts'] = getKey()['ts']
         mx_api['check'] = hex_md5(signRecordVal)
         const url = {
             url:'https://activity-api-mx.wandafilm.com/activityWholeSign/getSignRecord.api',
             headers:{
                 'MX-API':JSON.stringify(mx_api),
             },
-            body : 'activityCode=12786638'
+            body : 'activityCode='+$.signCode
             }
         $.post(url, (err, resp, data) => {
             try {
@@ -77,17 +89,67 @@ function signRecord() {
     })
 }
 
+function lottery() {
+    return new Promise((resolve) => {
+        const signVal = getKey()['key'] + '/activityWholeSign/prize/lottery.apiactivityCode='+$.signCode+'&vcode=&requestId='
+        mx_api['ts'] = getKey()['ts']
+        mx_api['check'] = hex_md5(signVal)
+        const url = {
+            url:'https://activity-api-mx.wandafilm.com/activityWholeSign/prize/lottery.api',
+            headers:{
+                'MX-API':JSON.stringify(mx_api),
+            },
+            body : 'activityCode='+$.signCode+'&vcode=&requestId='
+            }
+        $.post(url, (err, resp, data) => {
+            try {
+                $.lottery = JSON.parse(data)
+                console.log(data)
+            } catch (e) {
+            $.logErr(e, resp)
+            } finally {
+            resolve()
+            }
+        })
+    })
+}
+
+function question_() {
+    return new Promise((resolve) => {
+        const questionVal = getKey()['key']+'/question/qustion/strength.apiactivityCode='+$.questionCode
+        mx_api['ts'] = getKey()['ts']
+        mx_api['check'] = hex_md5(questionVal)
+        const url = {
+            url:'https://activity-api-mx.wandafilm.com/question/qustion/strength.api',
+            headers:{
+                'MX-API':JSON.stringify(mx_api),
+            },
+            body : 'activityCode='+$.questionCode
+        }
+        $.post(url, (err, resp, data) => {
+            try {
+                $.log(`尝试性报名答题`)
+            } catch (e) {
+            $.logErr(e, resp)
+            } finally {
+            resolve()
+            }
+        })
+    })
+}
+
 // 获取题目答案
 function question() {
     return new Promise((resolve) => {
-        const questionVal = key+'/question/question_list.apiactivityCode=15884027'
+        const questionVal = getKey()['key']+'/question/question_list.apiactivityCode='+$.questionCode
+        mx_api['ts'] = getKey()['ts']
         mx_api['check'] = hex_md5(questionVal)
         const url = {
             url:'https://activity-api-mx.wandafilm.com/question/question_list.api',
             headers:{
                 'MX-API':JSON.stringify(mx_api),
             },
-            body : 'activityCode=15884027'
+            body : 'activityCode='+$.questionCode
         }
         $.post(url, (err, resp, data) => {
             try {
@@ -105,14 +167,15 @@ function question() {
 // 答题
 function answer() {
     return new Promise((resolve) => {
-        const answerVal = key + '/question/qustion/answer.apiactivityCode=15884027&answer=%7b%221%22%3a%22'+escape(`${$.answer}`).toLowerCase()+'%22%7d'
+        const answerVal = getKey()['key'] + '/question/qustion/answer.apiactivityCode='+$.questionCode+'&answer=%7b%221%22%3a%22'+escape(`${$.answer}`).toLowerCase()+'%22%7d'
+        mx_api['ts'] = getKey()['ts']
         mx_api['check'] = hex_md5(answerVal)
         const url = {
             url:'https://activity-api-mx.wandafilm.com/question/qustion/answer.api',
             headers:{
                 'MX-API':JSON.stringify(mx_api),
             },
-            body : 'activityCode=15884027&answer=%7B%221%22%3A%22'+encodeURI(`${$.answer}`) + '%22%7D'
+            body : 'activityCode='+$.questionCode+'&answer=%7B%221%22%3A%22'+encodeURI(`${$.answer}`) + '%22%7D'
         }
         $.post(url, (err, resp, data) => {
             try {
@@ -129,14 +192,15 @@ function answer() {
 // 答题后抽奖
 function drawprize_ans() {
     return new Promise((resolve) => {
-        const drawprizeVal = key+'/question/prize/lottery.apiactivityCode=15884027'
+        const drawprizeVal = getKey()['key']+'/question/prize/lottery.apiactivityCode='+$.questionCode
+        mx_api['ts'] = getKey()['ts']
         mx_api['check'] = hex_md5(drawprizeVal)
         const url = {
             url:'https://activity-api-mx.wandafilm.com/question/prize/lottery.api',
             headers:{
                 'MX-API':JSON.stringify(mx_api),
             },
-            body : 'activityCode=15884027'
+            body : 'activityCode='+$.questionCode
         }
         $.post(url, (err, resp, data) => {
             try {
@@ -158,9 +222,10 @@ function showmsg() {
         if ($.signRecord.code == 1) {
             const totalMedal = $.signRecord.data.totalMedal
             const remainMedal = $.signRecord.data.remainMedal
-            $.desc.push(`本次获得${totalMedal}能量,剩余可用${remainMedal}能量`)
+            $.desc.push(`总计获得${totalMedal}能量,剩余可用${remainMedal}能量`)
         }
-        $.subt += ` 答题详情:${$.answer.code == 1 ? `答案:${$.answer.data.answer},获得:${$.answer.data.remainChance}次抽奖`:$.answer.msg}`
+        //$.subt += ` 答题详情:${$.answer.code == 1 ? `答案:${$.answer.data.answer},获得:${$.answer.data.remainChance}次抽奖`:$.answer.msg}`
+        $.lottery ? $.desc.push(`签到抽奖:${$.lottery.data.prize.prizeName}`) : ``
         $.msg($.name, $.subt, $.desc.join('\n'))
         resolve()
     })

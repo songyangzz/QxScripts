@@ -33,7 +33,7 @@ const headers = {
   let news = newslist.news[0];
   let title = "🗞【疫情信息概览】";
   let subtitle = `📅  ${formatTime()}`;
-  let detail = 
+  let detail =
     "\n「全国数据」" +
     "\n\n    -新增确诊: " +
     desc.confirmedIncr +
