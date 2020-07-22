@@ -68,6 +68,10 @@ if (typeof $request !== 'undefined') {
   if (display_location) {
     $.info(`成功获取当前位置：纬度 ${location.latitude} 经度 ${location.longitude}`);
   }
+  
+  $.write(res[1], "#latitude");
+  $.write(res[2], "#longitude");
+
   $.write(location, "location");
   $.done({ body: $request.body });
 } else {
@@ -198,9 +202,9 @@ function realtimeWeather() {
 
   $.notify(
     `[彩云天气] ${address.city} ${address.district} ${address.street}`,
-    `${mapSkycon(realtime.skycon)[0]} ${realtime.apparent_temperature} ℃  🌤 空气质量 ${realtime.air_quality.description.chn}`,
+    `${mapSkycon(realtime.skycon)[0]} ${realtime.temperature} ℃  🌤 空气质量 ${realtime.air_quality.description.chn}`,
     `${keypoint}
-🌡 体感${realtime.life_index.comfort.desc} ${realtime.temperature} ℃  💧 湿度 ${(realtime.humidity * 100).toFixed(0)}%
+🌡 体感${realtime.life_index.comfort.desc} ${realtime.apparent_temperature} ℃  💧 湿度 ${(realtime.humidity * 100).toFixed(0)}%
 🌞 紫外线 ${realtime.life_index.ultraviolet.desc} 
 💨 风力 ${mapWind(realtime.wind.speed, realtime.wind.direction)}
 
@@ -281,24 +285,24 @@ function mapWind(speed, direction) {
 function mapSkycon(skycon) {
   const map = {
     "CLEAR_DAY": ["☀️ 日间晴朗", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/CLEAR_DAY.mp4?raw=true"],
-    "CLEAR_NIGHT": "✨ 夜间晴朗",
+    "CLEAR_NIGHT": ["✨ 夜间晴朗"],
     "PARTLY_CLOUDY_DAY": ["⛅️ 日间多云", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/CLOUDY_DAY.mp4?raw=true"],
-    "PARTLY_CLOUDY_NIGHT": "☁️ 夜间多云",
-    "CLOUDY": "☁️ 阴",
-    "LIGHT_HAZE": "😤 轻度雾霾",
-    "MODERATE_HAZE": "😤 中度雾霾",
-    "HEAVY_HAZE": "😤 重度雾霾",
+    "PARTLY_CLOUDY_NIGHT": ["☁️ 夜间多云"],
+    "CLOUDY": ["☁️ 阴"],
+    "LIGHT_HAZE": ["😤 轻度雾霾"],
+    "MODERATE_HAZE": ["😤 中度雾霾"],
+    "HEAVY_HAZE": ["😤 重度雾霾"],
     "LIGHT_RAIN": ["💧 小雨", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/RAIN.mp4?raw=true"],
     "MODERATE_RAIN": ["💦 中雨", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/RAIN.mp4?raw=true"],
     "HEAVY_RAIN": ["🌧 大雨", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/HEAVY_RAIN.mp4?raw=true"],
     "STORM_RAIN": ["⛈ 暴雨", "https://github.com/Peng-YM/QuanX/blob/master/assets/caiyun/HEAVY_RAIN.mp4?raw=true"],
-    "LIGHT_SNOW": "🌨 小雪",
-    "MODERATE_SNOW": "❄️ 中雪",
-    "HEAVY_SNOW": "☃️ 大雪",
-    "STORM_SNOW": "⛄️暴雪",
-    "DUST": "💨 浮尘",
-    "SAND": "💨 沙尘",
-    "WIND": "🌪 大风"
+    "LIGHT_SNOW": ["🌨 小雪"],
+    "MODERATE_SNOW": ["❄️ 中雪"],
+    "HEAVY_SNOW": ["☃️ 大雪"],
+    "STORM_SNOW": ["⛄️暴雪"],
+    "DUST": ["💨 浮尘"],
+    "SAND": ["💨 沙尘"],
+    "WIND": ["🌪 大风"]
   }
   return map[skycon];
 }
