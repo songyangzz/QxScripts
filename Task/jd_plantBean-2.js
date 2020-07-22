@@ -17,7 +17,7 @@ const name = '京东种豆得豆';
 const $ = new Env(name);
 const Key = '';//单引号内自行填写您抓取的京东Cookie
 //直接用NobyDa的jd cookie
-const cookie =  Key ? Key : $.getdata('CookieJD');
+const cookie =  Key ? Key : $.getdata('CookieJD2');
 let jdNotify = $.getdata('jdPlantBeanNotify');
 
 //京东接口地址
