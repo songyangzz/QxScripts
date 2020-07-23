@@ -37,7 +37,7 @@ isBox = boxShareCodeArr.some((item) => {
   const boxShareCode = $.getdata(item);
   return (boxShareCode !== undefined && boxShareCode !== null && boxShareCode !== '');
 });
-if (isBox) {
+if (false) {
   shareCodes = [];
   for (const item of boxShareCodeArr) {
     if ($.getdata(item)) {
