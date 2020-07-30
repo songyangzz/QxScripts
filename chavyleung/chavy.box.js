@@ -1,7 +1,6 @@
 const $ = new Env('BoxJs')
-$.domain = '8.8.8.8'
 
-$.version = '0.4.23'
+$.version = '0.6.14'
 $.versionType = 'beta'
 $.KEY_sessions = 'chavy_boxjs_sessions'
 $.KEY_versions = 'chavy_boxjs_versions'
@@ -14,8 +13,12 @@ $.html = $.name
 
 !(async () => {
   const path = getPath($request.url)
-  // 处理主页请求 => /home
-  if (/^\/home/.test(path)) {
+  // 处理主页请求 => / 或 /home
+  if (/(^\/home|^\/?$)/.test(path)) {
+    await handleHome()
+  }
+  // 处理主页请求 => /app
+  if (/(^\/app$)/.test(path)) {
     await handleHome()
   }
   // 处理主页请求 => /sub
@@ -36,15 +39,25 @@ $.html = $.name
   else if (/^\/my/.test(path)) {
     await handleMy()
   }
+  // 处理 revert 请求 => /revert
+  else if (/^\/revert/.test(path)) {
+    await handleRevert()
+  }
 })()
   .catch((e) => {
     $.logErr(e)
   })
   .finally(() => {
     if ($.isapi) {
-      $done({ body: $.JSON })
+      $done({ body: $.json })
     } else {
-      $.done({ status: 200, body: $.html })
+      if ($.isSurge() || $.isLoon()) {
+        $.done({ response: { status: 200, body: $.html } })
+      } else if ($.isQuanX()) {
+        $.done({ status: 'HTTP/1.1 200', headers: { 'Content-Type': 'text/html; charset=utf-8' }, body: $.html })
+      } else {
+        $.done()
+      }
     }
   })
 
@@ -55,7 +68,8 @@ $.html = $.name
 function getPath(url) {
   // 如果以`/`结尾, 先去掉最后一个`/`
   const fullpath = /\/$/.test(url) ? url.replace(/\/$/, '') : url
-  return new RegExp($.domain).test(url) ? fullpath.split($.domain)[1] : undefined
+  const [, domain] = /https?:\/\/(.*?)\/.*/.exec($request.url)
+  return new RegExp(domain).test(url) ? fullpath.split(domain)[1] : undefined
 }
 
 function getSystemCfgs() {
@@ -68,170 +82,28 @@ function getSystemCfgs() {
       { id: 'QuanX', icons: ['https://raw.githubusercontent.com/Orz-3/mini/none/quanX.png', 'https://raw.githubusercontent.com/Orz-3/task/master/quantumultx.png'] },
       { id: 'Loon', icons: ['https://raw.githubusercontent.com/Orz-3/mini/none/loon.png', 'https://raw.githubusercontent.com/Orz-3/task/master/loon.png'] }
     ],
-    chavy: {
-      id: 'Chavy Scripts',
-      icon: 'https://avatars3.githubusercontent.com/u/29748519',
-      repo: 'https://github.com/chavyleung/scripts'
-    },
-    senku: {
-      id: 'GideonSenku',
-      icon: 'https://avatars1.githubusercontent.com/u/39037656',
-      repo: 'https://github.com/GideonSenku'
-    },
-    orz3: {
-      id: 'Orz-3',
-      icon: 'https://raw.githubusercontent.com/Orz-3/task/master/Orz-3.png',
-      repo: 'https://github.com/Orz-3/'
-    },
-    contributors: [
-      { id: 'danchaw', icon: 'https://avatars1.githubusercontent.com/u/33873206?s=60&v=4', repo: 'https://github.com/danchaw' },
-      { id: '0x959', icon: 'https://avatars3.githubusercontent.com/u/42092849?s=60&v=4', repo: 'https://github.com/0x959' },
-      { id: 'lcandy2', icon: 'https://avatars1.githubusercontent.com/u/45784494?s=60&v=4', repo: 'https://github.com/lcandy2' },
-      { id: 'lowking', icon: 'https://avatars0.githubusercontent.com/u/33308659?s=60&v=4', repo: 'https://github.com/lowking' },
-      { id: 'chouchoui', icon: 'https://avatars1.githubusercontent.com/u/14866249?s=60&v=4', repo: 'https://github.com/chouchoui' },
-      { id: 'evilbutcher', icon: 'https://avatars1.githubusercontent.com/u/62224738?s=60&v=4', repo: 'https://github.com/evilbutcher' },
-      { id: 'eegod', icon: 'https://avatars0.githubusercontent.com/u/9635792?s=60&v=4', repo: 'https://github.com/eegod' },
-      { id: 'KaytZ', icon: 'https://avatars2.githubusercontent.com/u/17397324?s=60&v=4', repo: 'https://github.com/KaytZ' }
-    ],
-    boxjs: {
-      id: 'BoxJs',
-      show: false,
-      icon: 'https://raw.githubusercontent.com/Orz-3/task/master/box.png',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/box.png', 'https://raw.githubusercontent.com/Orz-3/task/master/box.png'],
-      repo: 'https://github.com/chavyleung/scripts'
-    }
+    chavy: { id: 'Chavy Scripts', icon: 'https://avatars3.githubusercontent.com/u/29748519', repo: 'https://github.com/chavyleung/scripts' },
+    senku: { id: 'GideonSenku', icon: 'https://avatars1.githubusercontent.com/u/39037656', repo: 'https://github.com/GideonSenku' },
+    orz3: { id: 'Orz-3', icon: 'https://raw.githubusercontent.com/Orz-3/task/master/Orz-3.png', repo: 'https://github.com/Orz-3/' },
+    boxjs: { id: 'BoxJs', show: false, icon: 'https://raw.githubusercontent.com/Orz-3/task/master/box.png', icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/box.png', 'https://raw.githubusercontent.com/Orz-3/task/master/box.png'], repo: 'https://github.com/chavyleung/scripts' },
+    contributors: []
   }
 }
 
 function getSystemApps() {
   const sysapps = [
     {
-      id: '10010',
-      name: '中国联通',
-      keys: ['chavy_tokenurl_10010', 'chavy_tokenheader_10010', 'chavy_signurl_10010', 'chavy_signheader_10010', 'chavy_loginlotteryurl_10010', 'chavy_loginlotteryheader_10010', 'chavy_findlotteryurl_10010', 'chavy_findlotteryheader_10010'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/10010',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/10010.png', 'https://raw.githubusercontent.com/Orz-3/task/master/10010.png']
-    },
-    {
-      id: '52poje',
-      name: '吾爱破解',
-      keys: ['CookieWA'],
-      author: '@NobyDa',
-      repo: 'https://github.com/NobyDa/Script/blob/master/52pojie-DailyBonus/52pojie.js',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/52pj.png', 'https://raw.githubusercontent.com/Orz-3/task/master/52pj.png']
-    },
-    {
-      id: 'AcFun',
-      name: 'AcFun',
-      keys: ['chavy_cookie_acfun', 'chavy_token_acfun'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/acfun',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/acfun.png', 'https://raw.githubusercontent.com/Orz-3/task/master/acfun.png']
-    },
-    {
-      id: 'ApkTw',
-      name: 'ApkTw',
-      keys: ['chavy_cookie_apktw'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/apktw',
-      url: 'https://apk.tw/',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/apktw.png', 'https://raw.githubusercontent.com/Orz-3/task/master/apktw.png'],
-      tasks: [{ cron: '3 0 * * *', script: 'apktw.js' }],
-      rewrites: [{ type: 'request', pattern: '^https://apk.tw/member.php(.*?)action=login', script: 'apktw.cookie.js', body: true }]
-    },
-    {
-      id: 'BAIDU',
-      name: '百度签到',
-      keys: ['chavy_cookie_tieba'],
+      id: 'BoxSetting',
+      name: '偏好设置',
+      keys: ['@chavy_boxjs_userCfgs.httpapi', '@chavy_boxjs_userCfgs.color_dark_primary', '@chavy_boxjs_userCfgs.color_light_primary'],
       settings: [
-        { id: 'CFG_tieba_isOrderBars', name: '按连签排序', val: false, type: 'boolean', desc: '默认按经验排序' },
-        { id: 'CFG_tieba_maxShowBars', name: '每页显示数', val: 15, type: 'number', desc: '每页最显示多少个吧信息' },
-        { id: 'CFG_tieba_maxSignBars', name: '每次并发', val: 5, type: 'number', desc: '每次并发签到多少个吧' },
-        { id: 'CFG_tieba_signWaitTime', name: '并发间隔 (毫秒)', val: 2000, type: 'number', desc: '每次并发间隔时间' }
+        { id: '@chavy_boxjs_userCfgs.httpapis', name: 'HTTP-API (Surge TF)', val: '', type: 'textarea', placeholder: ',examplekey@127.0.0.1:6166', autoGrow: true, rows: 2, desc: '示例: ,examplekey@127.0.0.1:6166! 注意: 以逗号开头, 逗号分隔多个地址, 可加回车' },
+        { id: '@chavy_boxjs_userCfgs.color_light_primary', name: '明亮色调', canvas: true, val: '#F7BB0E', type: 'colorpicker', desc: '' },
+        { id: '@chavy_boxjs_userCfgs.color_dark_primary', name: '暗黑色调', canvas: true, val: '#2196F3', type: 'colorpicker', desc: '' }
       ],
       author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/tieba',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/baidu.png', 'https://raw.githubusercontent.com/Orz-3/task/master/baidu.png']
-    },
-    {
-      id: 'iQIYI',
-      name: '爱奇艺',
-      keys: ['CookieQY'],
-      author: '@NobyDa',
-      repo: 'https://github.com/NobyDa/Script/blob/master/iQIYI-DailyBonus/iQIYI.js',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/iQIYI.png', 'https://raw.githubusercontent.com/Orz-3/task/master/iQIYI.png']
-    },
-    {
-      id: 'JD618',
-      name: '京东618',
-      keys: ['chavy_url_jd816', 'chavy_body_jd816', 'chavy_headers_jd816'],
-      settings: [
-        { id: 'CFG_618_radomms_min', name: '最小随机等待 (毫秒)', val: 2000, type: 'text', desc: '在任务默认的等待时间基础上，再增加的随机等待时间！' },
-        { id: 'CFG_618_radomms_max', name: '最大随机等待 (毫秒)', val: 5000, type: 'text', desc: '在任务默认的等待时间基础上，再增加的随机等待时间！' },
-        { id: 'CFG_618_isSignShop', name: '商店签到', val: true, type: 'boolean', desc: '71 家商店, 如果每天都签不上, 可以关掉了! 默认: true' },
-        { id: 'CFG_618_isJoinBrand', name: '品牌会员', val: false, type: 'boolean', desc: '25 个品牌, 会自动加入品牌会员! 默认: true' },
-        { id: 'CFG_BOOM_times_JD618', name: '炸弹次数', val: 1, type: 'text', desc: '总共发送多少次炸弹! 默认: 1' },
-        { id: 'CFG_BOOM_interval_JD618', name: '炸弹间隔 (毫秒)', val: 100, type: 'text', desc: '每次间隔多少毫秒! 默认: 100' }
-      ],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/jd',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/jd.png', 'https://raw.githubusercontent.com/Orz-3/task/master/jd.png']
-    },
-    {
-      id: 'videoqq',
-      name: '腾讯视频',
-      keys: ['chavy_cookie_videoqq', 'chavy_auth_url_videoqq', 'chavy_auth_header_videoqq', 'chavy_msign_url_videoqq', 'chavy_msign_header_videoqq'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/videoqq',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/videoqq.png', 'https://raw.githubusercontent.com/Orz-3/task/master/videoqq.png']
-    },
-    {
-      id: 'V2EX',
-      name: 'V2EX',
-      keys: ['chavy_cookie_v2ex'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/v2ex',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/v2ex.png', 'https://raw.githubusercontent.com/Orz-3/task/master/v2ex.png']
-    },
-    {
-      id: 'NeteaseMusic',
-      name: '网易云音乐',
-      keys: ['chavy_cookie_neteasemusic'],
-      settings: [
-        { id: 'CFG_neteasemusic_retryCnt', name: '重试次数', val: 10, type: 'text', desc: '一直尝试签到直至出现“重复签到”标识!' },
-        { id: 'CFG_neteasemusic_retryInterval', name: '重试间隔 (毫秒)', val: 500, type: 'text', desc: '每次重试间隔时间 (毫秒)！' }
-      ],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/neteasemusic',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/Netease.png', 'https://raw.githubusercontent.com/Orz-3/task/master/Netease.png']
-    },
-    {
-      id: 'WPS',
-      name: 'WPS',
-      keys: ['chavy_signhomeurl_wps', 'chavy_signhomeheader_wps'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/wps',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/wps.png', 'https://raw.githubusercontent.com/Orz-3/task/master/wps.png']
-    },
-    {
-      id: 'NoteYoudao',
-      name: '有道云笔记',
-      keys: ['chavy_signurl_noteyoudao', 'chavy_signbody_noteyoudao', 'chavy_signheaders_noteyoudao'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/tree/master/noteyoudao',
-      url: 'https://apps.apple.com/cn/app/有道云笔记-扫描王版/id450748070',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/noteyoudao.png', 'https://raw.githubusercontent.com/Orz-3/task/master/noteyoudao.png'],
-      tasks: [{ cron: '3 0 * * *', script: 'noteyoudao.js' }],
-      rewrites: [{ type: 'request', pattern: '^https://note.youdao.com/yws/mapi/user?method=checkin', script: 'noteyoudao.cookie.js', body: true }]
-    },
-    {
-      id: 'txnews',
-      name: '腾讯新闻',
-      keys: ['sy_signurl_txnews', 'sy_cookie_txnews', 'sy_signurl_txnews2', 'sy_cookie_txnews2'],
-      author: '@Sunert',
-      repo: 'https://github.com/Sunert/Scripts/blob/master/Task/txnews.js',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/txnews.png', 'https://raw.githubusercontent.com/Orz-3/task/master/txnews.png']
+      repo: 'https://github.com/chavyleung/scripts/blob/master/box/switcher/box.switcher.js',
+      icons: ['https://raw.githubusercontent.com/chavyleung/scripts/master/box/icons/BoxSetting.mini.png', 'https://raw.githubusercontent.com/chavyleung/scripts/master/box/icons/BoxSetting.png']
     },
     {
       id: 'BoxSwitcher',
@@ -240,15 +112,8 @@ function getSystemApps() {
       settings: [{ id: 'CFG_BoxSwitcher_isSilent', name: '静默运行', val: false, type: 'boolean', desc: '切换会话时不发出系统通知!' }],
       author: '@chavyleung',
       repo: 'https://github.com/chavyleung/scripts/blob/master/box/switcher/box.switcher.js',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/box.png', 'https://raw.githubusercontent.com/Orz-3/task/master/box.png']
-    },
-    {
-      id: 'sfexpress',
-      name: '顺丰速运',
-      keys: ['chavy_loginurl_sfexpress', 'chavy_loginheader_sfexpress'],
-      author: '@chavyleung',
-      repo: 'https://github.com/chavyleung/scripts/blob/master/sfexpress',
-      icons: ['https://raw.githubusercontent.com/Orz-3/mini/master/sfexpress.png', 'https://raw.githubusercontent.com/Orz-3/task/master/sfexpress.png']
+      icons: ['https://raw.githubusercontent.com/chavyleung/scripts/master/box/icons/BoxSwitcher.mini.png', 'https://raw.githubusercontent.com/chavyleung/scripts/master/box/icons/BoxSwitcher.png'],
+      script: 'https://raw.githubusercontent.com/chavyleung/scripts/master/box/switcher/box.switcher.js'
     }
   ]
   sysapps.sort((a, b) => a.id.localeCompare(b.id))
@@ -257,7 +122,7 @@ function getSystemApps() {
 }
 
 function getUserCfgs() {
-  const defcfgs = { favapps: [], appsubs: [], appsubCaches: {}, refreshsecs: 3 }
+  const defcfgs = { favapps: [], appsubs: [], appsubCaches: {}, httpapi: 'examplekey@127.0.0.1:6166' }
   const userCfgsStr = $.getdata($.KEY_userCfgs)
   return userCfgsStr ? Object.assign(defcfgs, JSON.parse(userCfgsStr)) : defcfgs
 }
@@ -294,13 +159,18 @@ function refreshAppSub(sub, usercfgs) {
   })
 }
 
-async function refreshAppSubs() {
+async function refreshAppSubs(subId) {
   $.msg($.name, '更新订阅: 开始!')
   const usercfgs = getUserCfgs()
   const refreshActs = []
-  for (let subIdx = 0; subIdx < usercfgs.appsubs.length; subIdx++) {
-    const sub = usercfgs.appsubs[subIdx]
+  if (subId) {
+    const sub = usercfgs.appsubs.find((sub) => sub.id === subId)
     refreshActs.push(refreshAppSub(sub, usercfgs))
+  } else {
+    for (let subIdx = 0; subIdx < usercfgs.appsubs.length; subIdx++) {
+      const sub = usercfgs.appsubs[subIdx]
+      refreshActs.push(refreshAppSub(sub, usercfgs))
+    }
   }
   await Promise.all(refreshActs)
   $.setdata(JSON.stringify(usercfgs), $.KEY_userCfgs)
@@ -349,6 +219,7 @@ function wrapapps(apps) {
       app.settings.forEach((setting) => {
         const valdat = $.getdata(setting.id)
         const val = [undefined, null, 'null', ''].includes(valdat) ? null : valdat
+        setting.defval = setting.val
         if (setting.type === 'boolean') {
           setting.val = val === null ? setting.val : val === 'true'
         } else if (setting.type === 'int') {
@@ -378,16 +249,16 @@ function getSessions() {
   return Array.isArray(sessions) ? sessions : []
 }
 
+function getCurSessions(appId) {
+  const curSessionsstr = $.getdata($.KEY_curSessions)
+  return ![undefined, null, 'null', ''].includes(curSessionsstr) ? JSON.parse(curSessionsstr) : {}
+}
+
 async function getVersions() {
   let vers = []
-  // 如果启用了修复功能, 则直接返回, 不发送检查版本请求
-  // const usercfgs = getUserCfgs()
-  // if (['true', true].includes(usercfgs.isFixVPN)) {
-  //   return vers
-  // }
   await new Promise((resolve) => {
     setTimeout(resolve, 1000)
-    const verurl = 'https://raw.githubusercontent.com/chavyleung/scripts/master/box/release/box.release.json'
+    const verurl = `https://gitee.com/chavyleung/scripts/raw/master/box/release/box.release.json`
     $.get({ url: verurl }, (err, resp, data) => {
       try {
         const _data = JSON.parse(data)
@@ -400,20 +271,6 @@ async function getVersions() {
     })
   })
   return vers
-}
-
-function getSystemThemes() {
-  return [
-    { id: '', name: '默认' },
-    { id: 'red', name: '红色' },
-    { id: 'pink', name: '粉红' },
-    { id: 'purple', name: '紫色' },
-    { id: 'blue', name: '蓝色' },
-    { id: 'light-blue', name: '浅蓝' },
-    { id: 'brown', name: '棕色' },
-    { id: 'grey', name: '灰色' },
-    { id: 'blue-grey', name: '蓝灰' }
-  ]
 }
 
 async function handleApi() {
@@ -460,7 +317,7 @@ async function handleApi() {
     let isAllSaveSuc = true
     app.datas.forEach((data) => {
       const oldval = $.getdata(data.key)
-      const newval = data.val
+      const newval = data.val ? data.val : ''
       const savesuc = $.setdata(`${newval}`, data.key)
       isAllSaveSuc = !savesuc ? false : isAllSaveSuc
       $.log('', `❕ ${app.name}, 保存设置: ${data.key} ${savesuc ? '成功' : '失败'}!`, `旧值: ${oldval}`, `新值: ${newval}`)
@@ -487,8 +344,7 @@ async function handleApi() {
   // 应用会话
   else if (data.cmd === 'useSession') {
     $.log(`❕ ${$.name}, 应用会话!`)
-    const curSessionsstr = $.getdata($.KEY_curSessions)
-    const curSessions = ![undefined, null, 'null', ''].includes(curSessionsstr) ? JSON.parse(curSessionsstr) : {}
+    const curSessions = getCurSessions()
     const session = data.val
     const sessions = getSessions()
     const sessionIdx = sessions.findIndex((s) => session.id === s.id)
@@ -587,21 +443,58 @@ async function handleApi() {
   }
   // 刷新应用订阅
   else if (data.cmd === 'refreshAppSubs') {
-    await refreshAppSubs()
+    await refreshAppSubs(data && data.val)
+  }
+  // 抹掉订阅缓存
+  else if (data.cmd === 'revertSubCaches') {
+    console.log(data.cmd)
+    const usercfgs = getUserCfgs()
+    usercfgs.appsubCaches = {}
+    const delsuc = $.setdata(JSON.stringify(usercfgs), $.KEY_userCfgs)
+    $.subt = `抹掉订阅缓存: ${delsuc ? '成功' : '失败'}`
+    $.msg($.name, $.subt)
+  }
+  // 抹掉备份
+  else if (data.cmd === 'revertBaks') {
+    const delsuc = $.setdata('', $.KEY_globalBaks) ? '成功' : '失败'
+    $.subt = `抹掉备份: ${delsuc ? '成功' : '失败'}`
+    $.msg($.name, $.subt)
+  }
+  // 抹掉会话
+  else if (data.cmd === 'revertSessions') {
+    const delsuc = $.setdata('', $.KEY_sessions) ? '成功' : '失败'
+    $.setdata('', $.KEY_curSessions)
+    $.subt = `抹掉会话: ${delsuc ? '成功' : '失败'}`
+    $.msg($.name, $.subt)
+  }
+  // 运行脚本
+  else if (data.cmd === 'runScript') {
+    const httpapi = $.getdata('@chavy_boxjs_userCfgs.httpapi')
+    const ishttpapi = /.*?@.*?:[0-9]+/.test(httpapi)
+    if ($.isSurge() && ishttpapi) {
+      await $.getScript(data.val).then((script) => $.runScript(script))
+    } else {
+      await $.getScript(data.val).then((script) => {
+        // 避免被执行脚本误认为是 rewrite 环境
+        // 所以需要 `$request = undefined`
+        $request = undefined
+        eval(script)
+      })
+    }
   }
 }
 
 async function getBoxData() {
   const box = {
     sessions: getSessions(),
+    curSessions: getCurSessions(),
     versions: await getVersions(),
     sysapps: getSystemApps(),
     userapps: getUserApps(),
     appsubs: getAppSubs(),
     syscfgs: getSystemCfgs(),
     usercfgs: getUserCfgs(),
-    globalbaks: getGlobalBaks(),
-    colors: getSystemThemes()
+    globalbaks: getGlobalBaks()
   }
   const apps = []
   apps.push(...box.sysapps)
@@ -629,6 +522,9 @@ async function handleApp(appId) {
   }
   box.appsubs.filter((sub) => sub.enable !== false).forEach((sub) => apps.push(...sub.apps))
   const curapp = apps.find((app) => app.id === appId)
+  if (curapp.script && $.isSurge()) {
+    await $.getScript(curapp.script).then((script) => (curapp.script_text = script))
+  }
   $.html = printHtml(JSON.stringify(box), JSON.stringify(curapp), 'appsession')
   if (box.usercfgs.isDebugFormat) {
     console.log(printHtml(`'\${data}'`, `'\${curapp}'`, `\${curview}`))
@@ -657,7 +553,11 @@ async function handleMy() {
   }
 }
 
-function printHtml(data, curapp = null, curview = 'app') {
+async function handleRevert() {
+  $.html = printRevertHtml()
+}
+
+function printRevertHtml() {
   return `
   <!DOCTYPE html>
   <html lang="zh-CN">
@@ -672,16 +572,181 @@ function printHtml(data, curapp = null, curview = 'app') {
       <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
       <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet" />
       <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet" />
+    </head>
+    <body>
+      <div id="app">
+        <v-app v-cloak>
+          <v-container>
+            <v-card class="mt-4">
+              <v-card-title>抹掉订阅缓存</v-card-title>
+              <v-card-text>
+                <p class="">该操作会抹掉: <font class="error--text">订阅缓存</font></p>
+                如果添加、更新了订阅后出现白屏现象, 可以尝试抹掉用户设置 <br />
+                注意: 该操作不会删掉订阅, 只会清空订阅缓存
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-dialog v-model="ui.revertSubCachesDialog.show" persistent max-width="290">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small text color="error" v-on="on">抹掉</v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline">确定抹掉订阅?</v-card-title>
+                    <v-card-text>该操作不可逆, 请注意备份!</v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="grey darken-1" text @click="ui.revertSubCachesDialog.show = false">取消</v-btn>
+                      <v-btn color="green darken-1" text @click="revertSubCaches()">确定</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-card-actions>
+            </v-card>
+            <v-card class="mt-4">
+              <v-card-title>抹掉全局备份</v-card-title>
+              <v-card-text>
+                <p>该操作会抹掉: <font class="error--text">全局备份</font></p>
+                如果备份、导入备份后出现 VPN 断开重连现象, 可尝试抹掉所有备份
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-dialog v-model="ui.revertBaksDialog.show" persistent max-width="290">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small text color="error" v-on="on">抹掉</v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline">确定抹掉备份?</v-card-title>
+                    <v-card-text>该操作不可逆, 请注意备份!</v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="grey darken-1" text @click="ui.revertBaksDialog.show = false">取消</v-btn>
+                      <v-btn color="green darken-1" text @click="revertBaks()">确定</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-card-actions>
+            </v-card>
+            <v-card class="mt-4">
+              <v-card-title>抹掉所有会话</v-card-title>
+              <v-card-text>
+                <p>该操作会抹掉: <font class="error--text">所有会话</font></p>
+                如果切换会话时出现不符预期现象, 可尝试抹掉所有会话
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-dialog v-model="ui.revertSessionsDialog.show" persistent max-width="290">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small text color="error" v-on="on">抹掉</v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title class="headline">确定抹掉会话?</v-card-title>
+                    <v-card-text>该操作不可逆, 请注意备份!</v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="grey darken-1" text @click="ui.revertSessionsDialog.show = false">取消</v-btn>
+                      <v-btn color="green darken-1" text @click="revertSessions()">确定</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-card-actions>
+            </v-card>
+            <v-overlay v-model="ui.overlay.show" :opacity="0.7">
+              <v-progress-circular indeterminate size="64"></v-progress-circular>
+            </v-overlay>
+          </v-container>
+        </v-app>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/axios@0.19.2/dist/axios.min.js"></script>
+      <script>
+        new Vue({
+          el: '#app',
+          vuetify: new Vuetify({ theme: { dark: true } }),
+          data() {
+            return {
+              ui: {
+                overlay: { show: false },
+                revertSubCachesDialog: {show: false},
+                revertBaksDialog: {show: false},
+                revertSessionsDialog: {show: false}
+              }
+            }
+          },
+          computed: {
+          },
+          watch: {
+          },
+          methods: {
+            revertSubCaches: function() {
+              this.ui.revertSubCachesDialog.show = false
+              this.ui.overlay.show = true
+              axios.post('/api', JSON.stringify({ cmd: 'revertSubCaches', val: null })).finally(() => {
+                this.ui.overlay.show = false
+              })
+            },
+            revertBaks: function() {
+              this.ui.revertBaksDialog.show = false
+              this.ui.overlay.show = true
+              axios.post('/api', JSON.stringify({ cmd: 'revertBaks', val: null })).finally(() => {
+                this.ui.overlay.show = false
+              })
+            },
+            revertSessions: function() {
+              this.ui.revertSessionsDialog.show = false
+              this.ui.overlay.show = true
+              axios.post('/api', JSON.stringify({ cmd: 'revertSessions', val: null })).finally(() => {
+                this.ui.overlay.show = false
+              })
+            }
+          }
+        })
+      </script>
+    </body>
+  </html>
+  
+  `
+}
+
+function printHtml(data, curapp = null, curview = 'app') {
+  return `
+  <!DOCTYPE html>
+  <html lang="zh-CN">
+    <head>
+      <title>BoxJs</title>
+      <meta charset="utf-8" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+      <link rel="Bookmark" href="https://raw.githubusercontent.com/chavyleung/scripts/master/BOXJS.png" />
+      <link rel="shortcut icon" href="https://raw.githubusercontent.com/chavyleung/scripts/master/BOXJS.png" />
+      <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/chavyleung/scripts/master/BOXJS.png" />
+      <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet" />
+      <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet" />
+      <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet" />
       <style>
-        [v-cloak]{
-          display: none
+        [v-cloak] {
+          display: none;
+        }
+        body {
+          padding-top: constant(safe-area-inset-top) !important;
+          padding-top: env(safe-area-inset-top);
+        }
+        .v-app-bar,
+        .v-navigation-drawer__content {
+          box-sizing: content-box;
+          padding-top: constant(safe-area-inset-top);
+          padding-top: env(safe-area-inset-top);
+        }
+        .v-app-bar .v-autocomplete {
+          box-sizing: border-box;
         }
         .v-bottom-navigation,
         .v-bottom-sheet {
           padding-bottom: constant(safe-area-inset-bottom);
           padding-bottom: env(safe-area-inset-bottom);
         }
-        .v-bottom-navigation{
+        .v-bottom-navigation {
           box-sizing: content-box;
         }
         .v-bottom-navigation button {
@@ -713,7 +778,7 @@ function printHtml(data, curapp = null, curview = 'app') {
     <body>
       <div id="app">
         <v-app v-scroll="onScroll" v-cloak>
-          <v-app-bar :color="ui.appbar.color" app dense>
+          <v-app-bar app dense :color="darkMode || !window.navigator.standalone ? undefined : $vuetify.theme.themes.light.primary">
             <v-menu bottom left v-if="['app', 'home', 'log', 'sub'].includes(ui.curview) && box.syscfgs.env !== ''">
               <template v-slot:activator="{ on }">
                 <v-btn icon v-on="on">
@@ -729,13 +794,13 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-list-item>
               </v-list>
             </v-menu>
-            <v-btn icon @click="ui.curview = ui.bfview" v-else><v-icon>mdi-chevron-left</v-icon></v-btn>
-            <v-autocomplete v-model="ui.autocomplete.curapp" :items="apps" :filter="appfilter" :menu-props="{ closeOnContentClick: true, overflowY: true }" :label="ui.curapp ? ui.curapp.name + ' ' + ui.curapp.author : 'BoxJs - v' + box.syscfgs.version" no-data-text="未实现" dense hide-details solo>
+            <v-btn :dark="fullscreen" icon @click="ui.curview = ui.bfview" v-else><v-icon>mdi-chevron-left</v-icon></v-btn>
+            <v-autocomplete v-model="ui.autocomplete.curapp" :items="apps" :filter="appfilter" :menu-props="{ closeOnContentClick: true, overflowY: true }" :label="'BoxJs - v' + box.syscfgs.version" no-data-text="未实现" dense hide-details solo>
               <template v-slot:item="{ item }">
                 <v-list-item @click="goAppSessionView(item)">
                   <v-list-item-avatar>
-                    <img v-if="item.icons" :src="item.icons[iconIdx]">
-                    <img v-else :src="ui.icons[iconIdx]">
+                    <img v-if="item.icons" :src="item.icons[iconIdx]" />
+                    <img v-else :src="ui.icons[iconIdx]" />
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title>{{ item.name }} ({{ item.id }})</v-list-item-title>
@@ -744,7 +809,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   </v-list-item-content>
                   <v-list-item-action>
                     <v-btn icon v-if="item.isFav" @click.stop="onFav(item)">
-                      <v-icon v-if="box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
+                      <v-icon v-if="darkMode && box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
                       <v-icon v-else color="yellow darken-2">mdi-star</v-icon>
                     </v-btn>
                     <v-btn icon v-else @click.stop="onFav(item)"><v-icon color="grey">mdi-star-outline</v-icon></v-btn>
@@ -761,10 +826,8 @@ function printHtml(data, curapp = null, curview = 'app') {
           <v-fab-transition>
             <v-speed-dial v-show="ui.box.show && !box.usercfgs.isHideBoxIcon" fixed fab bottom direction="top" :left="ui.drawer.show || box.usercfgs.isLeftBoxIcon" :right="!box.usercfgs.isLeftBoxIcon === true" :class="box.usercfgs.isHideNavi ? '' : 'has-nav'">
               <template v-slot:activator>
-                <v-btn fab>
-                  <v-avatar size="56">
-                    <img :src="box.syscfgs.boxjs.icons[iconIdx]" :alt="box.syscfgs.boxjs.repo" />
-                  </v-avatar>
+                <v-btn fab text @dblclick="onReload">
+                  <v-avatar><img :src="box.syscfgs.boxjs.icons[iconIdx]" :alt="box.syscfgs.boxjs.repo" /></v-avatar>
                 </v-btn>
               </template>
               <v-btn dark v-if="!box.usercfgs.isHideHelp" fab small color="grey" @click="ui.versheet.show = true">
@@ -777,10 +840,10 @@ function printHtml(data, curapp = null, curview = 'app') {
               <v-btn dark fab small color="indigo" @click="ui.impGlobalBakDialog.show = true">
                 <v-icon>mdi-database-import</v-icon>
               </v-btn>
-              <v-btn dark fab small color="green" v-clipboard:copy="JSON.stringify(boxdat)" v-clipboard:success="onCopy">
+              <v-btn dark fab small color="success" @click="" v-clipboard:copy="JSON.stringify(boxdat)" v-clipboard:success="onCopy">
                 <v-icon>mdi-export-variant</v-icon>
               </v-btn>
-              <v-btn dark fab small color="orange" @click="reload">
+              <v-btn dark v-if="!box.usercfgs.isHideRefresh" fab small color="orange" @click="reload">
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
             </v-speed-dial>
@@ -799,7 +862,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 <v-list-item-content>
                   <v-list-item-title>{{ box.syscfgs.senku.id }}</v-list-item-title>
                   <v-list-item-subtitle>{{ box.syscfgs.senku.repo }}</v-list-item-subtitle>
-                </v-ist-item-content>
+                </v-list-item-content>
               </v-list-item>
               <v-divider></v-divider>
               <v-list-item class="pt-1">
@@ -812,18 +875,19 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-row>
               </v-list-item>
               <v-divider></v-divider>
+              <v-list-item v-if="box.syscfgs.env === 'Surge'">
+                <v-list-item-content>
+                  <v-select v-if="box.usercfgs.httpapis" hide-details v-model="box.usercfgs.httpapi" :items="box.usercfgs.httpapis.split(',')" @change="onUserCfgsChange" label="HTTP-API (Surge TF)"> </v-select>
+                  <v-text-field v-else label="HTTP-API (Surge TF)" v-model="box.usercfgs.httpapi" hint="Surge http-api 地址." placeholder="examplekey@127.0.0.1:6166" persistent-hint @change="onUserCfgsChange" :rules="[(val)=> /.*?@.*?:[0-9]+/.test(val) || '格式错误: examplekey@127.0.0.1:6166']"> </v-text-field>
+                </v-list-item-content>
+              </v-list-item>
               <v-list-item>
                 <v-list-item-content>
-                  <v-select 
-                    hide-details
-                    v-model="box.usercfgs.theme"
-                    :items="[{text: '跟随系统', value: 'auto'}, {text: '暗黑', value: 'dark'}, {text: '明亮', value: 'light'}]"
-                    label="颜色主题"
-                  >
+                  <v-select hide-details v-model="box.usercfgs.theme" :items="[{text: '跟随系统', value: 'auto'}, {text: '暗黑', value: 'dark'}, {text: '明亮', value: 'light'}]" label="颜色主题"> </v-select>
                 </v-list-item-content>
               </v-list-item>
               <v-list-item class="mt-4">
-                <v-switch dense class="mt-0" hide-details label="透明图标" v-model="box.usercfgs.isTransparentIcons" @change="onUserCfgsChange" :disabled="!darkMode"></v-switch>
+                <v-switch dense class="mt-0" label="透明图标" v-model="box.usercfgs.isTransparentIcons" @change="onUserCfgsChange" :disabled="!darkMode" :hide-details="darkMode" :persistent-hint="true" hint="明亮主题下强制使用彩色图标"> </v-switch>
                 <v-spacer></v-spacer>
                 <v-btn fab small text @click="onLink(box.syscfgs.orz3.repo)">
                   <v-avatar size="32"><img :src="box.syscfgs.orz3.icon" :alt="box.syscfgs.orz3.repo" /></v-avatar>
@@ -849,6 +913,13 @@ function printHtml(data, curapp = null, curview = 'app') {
                 <v-spacer></v-spacer>
                 <v-btn fab small text @click="onLink(box.syscfgs.boxjs.repo)">
                   <v-avatar size="32"><v-icon>mdi-help</v-icon></v-avatar>
+                </v-btn>
+              </v-list-item>
+              <v-list-item class="mt-4">
+                <v-switch dense class="mt-0" hide-details label="隐藏刷新按钮" v-model="box.usercfgs.isHideRefresh" @change="onUserCfgsChange"></v-switch>
+                <v-spacer></v-spacer>
+                <v-btn fab small text>
+                  <v-avatar size="32"><v-icon>mdi-refresh</v-icon></v-avatar>
                 </v-btn>
               </v-list-item>
               <v-list-item class="mt-4">
@@ -927,7 +998,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                         </v-list-item-content>
                         <v-list-item-action>
                           <v-btn icon v-if="app.isFav" @click.stop="onFav(app, appIdx)">
-                            <v-icon v-if="box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
+                            <v-icon v-if="darkMode && box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
                             <v-icon v-else color="yellow darken-2">mdi-star</v-icon>
                           </v-btn>
                           <v-btn icon v-else @click.stop="onFav(app, appIdx)"><v-icon color="grey">mdi-star-outline</v-icon></v-btn>
@@ -940,30 +1011,51 @@ function printHtml(data, curapp = null, curview = 'app') {
               <v-expansion-panels class="mx-auto mt-4" v-if="box.sysapps.length > 0" multiple v-model="box.usercfgs.sysapppanel">
                 <v-expansion-panel>
                   <v-expansion-panel-header>
-                  内置应用 ({{ box.sysapps.length }})
+                    内置应用 ({{ box.sysapps.length }})
                   </v-expansion-panel-header>
                   <v-expansion-panel-content>
-                  <v-list nav dense class="mx-n4">
-                    <v-list-item three-line dense v-for="(app, appIdx) in box.sysapps" :key="app.id" @click="goAppSessionView(app)">
-                      <v-list-item-avatar><v-img :src="appicon(app)"></v-img></v-list-item-avatar>
-                      <v-list-item-content>
-                        <v-list-item-title>{{ app.name }} ({{ app.id }})</v-list-item-title>
-                        <v-list-item-subtitle>{{ app.repo }}</v-list-item-subtitle>
-                        <v-list-item-subtitle color="blue">{{ app.author }}</v-list-item-subtitle>
-                      </v-list-item-content>
-                      <v-list-item-action>
-                        <v-btn icon v-if="app.isFav" @click.stop="onFav(app, appIdx)">
-                          <v-icon v-if="box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
-                          <v-icon v-else color="yellow darken-2">mdi-star</v-icon>
-                        </v-btn>
-                        <v-btn icon v-else @click.stop="onFav(app, appIdx)"><v-icon color="grey">mdi-star-outline</v-icon></v-btn>
-                      </v-list-item-action>
-                    </v-list-item>
-                  </v-list>
+                    <v-list nav dense class="mx-n4">
+                      <v-list-item three-line dense v-for="(app, appIdx) in box.sysapps" :key="app.id" @click="goAppSessionView(app)">
+                        <v-list-item-avatar><v-img :src="appicon(app)"></v-img></v-list-item-avatar>
+                        <v-list-item-content>
+                          <v-list-item-title>{{ app.name }} ({{ app.id }})</v-list-item-title>
+                          <v-list-item-subtitle>{{ app.repo }}</v-list-item-subtitle>
+                          <v-list-item-subtitle color="blue">{{ app.author }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-list-item-action>
+                          <v-btn icon v-if="app.isFav" @click.stop="onFav(app, appIdx)">
+                            <v-icon v-if="darkMode && box.usercfgs.isTransparentIcons" color="white">mdi-star</v-icon>
+                            <v-icon v-else color="yellow darken-2">mdi-star</v-icon>
+                          </v-btn>
+                          <v-btn icon v-else @click.stop="onFav(app, appIdx)"><v-icon color="grey">mdi-star-outline</v-icon></v-btn>
+                        </v-list-item-action>
+                      </v-list-item>
+                    </v-list>
+                  </v-expansion-panel-content>
                 </v-expansion-panel>
               </v-expansion-panels>
             </v-container>
-            <v-container fluid v-if="ui.curview === 'appsession'">
+            <v-container fluid v-else-if="ui.curview === 'appsession'">
+              <v-subheader>
+                <h2>{{ui.curapp.name}}</h2>
+                <v-spacer></v-spacer>
+                <v-btn v-if="ui.curapp.script" icon @click="onRunScript(ui.curapp.script)"><v-icon color="primary">mdi-play-circle</v-icon></v-btn>
+              </v-subheader>
+              <v-card class="mx-auto mb-4">
+                <template v-if="Array.isArray(ui.curapp.scripts)">
+                  <v-subheader>
+                    应用脚本 ({{ ui.curapp.scripts.length }})
+                  </v-subheader>
+                  <v-list dense>
+                    <v-list-item v-for="(script, scriptIdx) in ui.curapp.scripts" :key="scriptIdx">
+                      <v-list-item-title>
+                        {{ scriptIdx + 1 }}. {{ script.name }}
+                      </v-list-item-title>
+                      <v-btn icon @click.stop="onRunScript(script.script)"><v-icon>mdi-play-circle</v-icon></v-btn>
+                    </v-list-item>
+                  </v-list>
+                </template>
+              </v-card>
               <v-card class="mx-auto mb-4">
                 <template v-if="Array.isArray(ui.curapp.settings)">
                   <v-subheader v-if="Array.isArray(ui.curapp.settings)">
@@ -972,7 +1064,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   <v-form class="pl-4 pr-4">
                     <template v-for="(setting, settingIdx) in ui.curapp.settings">
                       <v-slider :label="setting.name" v-model="setting.val" :hint="setting.desc" :min="setting.min" :max="setting.max" thumb-label="always" :placeholder="setting.placeholder" v-if="setting.type === 'slider'"></v-slider>
-                      <v-switch :label="setting.name" v-model="setting.val" :hint="setting.desc" :placeholder="setting.placeholder" v-else-if="setting.type === 'boolean'"></v-switch>
+                      <v-switch :label="setting.name" v-model="setting.val" :hint="setting.desc" :persistent-hint="!setting.hidehint" :placeholder="setting.placeholder" v-else-if="setting.type === 'boolean'"></v-switch>
                       <v-textarea :label="setting.name" v-model="setting.val" :hint="setting.desc" :auto-grow="setting.autoGrow" :placeholder="setting.placeholder" :rows="setting.rows" v-else-if="setting.type === 'textarea'"></v-textarea>
                       <v-radio-group :label="setting.name" v-model="setting.val" :hint="setting.desc" :placeholder="setting.placeholder" v-else-if="setting.type === 'radios'">
                         <v-radio :class="itemIdx === 0 ? 'mt-2' : ''" v-for="(item, itemIdx) in setting.items" :label="item.label" :value="item.key" :key="item.key"></v-radio>
@@ -981,6 +1073,10 @@ function printHtml(data, curapp = null, curview = 'app') {
                         <label>{{ setting.name }}</label>
                         <v-checkbox class="mt-0" :hide-details="itemIdx + 1 !== setting.items.length" v-model="setting.val" :label="item.label" :value="item.key" v-for="(item, itemIdx) in setting.items" :key="item.key" multiple></v-checkbox>
                       </template>
+                      <template v-else-if="setting.type === 'colorpicker'">
+                        <label>{{ setting.name }}</label>
+                        <v-color-picker class="mt-2 mb-4" v-model="setting.val" :hide-canvas="!setting.canvas" mode="hexa" light dot-size="30"></v-color-picker>
+                      </template>
                       <v-text-field :label="setting.name" v-model="setting.val" :hint="setting.desc" :placeholder="setting.placeholder" type="number" v-else-if="setting.type === 'number'"></v-text-field>
                       <v-text-field :label="setting.name" v-model="setting.val" :hint="setting.desc" :placeholder="setting.placeholder" v-else></v-text-field>
                     </template>
@@ -988,20 +1084,20 @@ function printHtml(data, curapp = null, curview = 'app') {
                   <v-divider></v-divider>
                   <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn small text color="success" @click="onSaveSettings">保存设置</v-btn>
+                    <v-btn small text color="primary" @click="onSaveSettings">保存设置</v-btn>
                   </v-card-actions>
                 </template>
               </v-card>
               <v-card class="mx-auto" v-if="ui.curapp.datas && ui.curapp.datas.length > 0">
                 <v-subheader>
-                  当前会话 ({{ ui.curapp.datas.length }})
+                  当前会话<a class="ml-2">{{ cursession ? cursession.name : '' }}</a>
                   <v-spacer></v-spacer>
                   <v-menu bottom left>
                     <template v-slot:activator="{ on }">
                       <v-btn icon v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
                     </template>
                     <v-list dense>
-                      <v-list-item v-clipboard:copy="JSON.stringify(ui.curapp)" v-clipboard:success="onCopy">
+                      <v-list-item @click="" v-clipboard:copy="JSON.stringify(ui.curapp)" v-clipboard:success="onCopy">
                         <v-list-item-title>复制会话</v-list-item-title>
                       </v-list-item>
                       <v-list-item @click="ui.impSessionDialog.show = true">
@@ -1026,7 +1122,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   <v-spacer></v-spacer>
                   <v-menu bottom left v-if="ui.curappSessions && ui.curappSessions.length > 0">
                     <template v-slot:activator="{ on }">
-                      <v-btn v-on="on" small text color="success">保存至</v-btn>
+                      <v-btn v-on="on" small text color="primary">保存至</v-btn>
                     </template>
                     <v-list dense>
                       <v-list-item v-for="(session, sessionIdx) in ui.curappSessions" :key="session.id" @click="onSaveSessionTo(session)">
@@ -1034,12 +1130,13 @@ function printHtml(data, curapp = null, curview = 'app') {
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                  <v-btn small text color="success" @click="onSaveSession">保存会话</v-btn>
+                  <v-btn small text color="primary" @click="onSaveSession">保存会话</v-btn>
                 </v-card-actions>
               </v-card>
               <v-card class="ml-10 mt-4" v-for="(session, sessionIdx) in ui.curappSessions" :key="session.id">
                 <v-subheader>
-                  #{{ sessionIdx + 1 }} {{ session.name }}
+                  <a v-if="cursession.id === session.id">#{{ sessionIdx + 1 }} {{ session.name }}</a>
+                  <template v-else>#{{ sessionIdx + 1 }} {{ session.name }}</template>
                   <v-spacer></v-spacer>
                   <v-menu bottom left>
                     <template v-slot:activator="{ on }">
@@ -1063,7 +1160,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   <v-btn small text color="grey">{{ session.createTime }}</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn small text color="error" @click="onDelSession(session)">删除</v-btn>
-                  <v-btn small text color="success" @click="onUseSession(session)">应用</v-btn>
+                  <v-btn small text color="primary" @click="onUseSession(session)">应用</v-btn>
                 </v-card-actions>
               </v-card>
               <v-card class="ma-4" v-if="(!ui.curappSessions || ui.curappSessions.length === 0) && ui.curapp.keys.length > 0">
@@ -1082,7 +1179,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   </v-card-text>
                   <v-divider></v-divider>
                   <v-card-actions>
-                    <v-btn text small v-clipboard:copy="ui.impSessionDialog.impval" v-clipboard:success="onCopy">复制</v-btn>
+                    <v-btn text small @click="" v-clipboard:copy="ui.impSessionDialog.impval" v-clipboard:success="onCopy">复制</v-btn>
                     <v-btn text small @click="onImpSessionPaste">粘粘</v-btn>
                     <v-spacer></v-spacer>
                     <v-btn text small color="grey darken-1" text @click="ui.impSessionDialog.show = false">取消</v-btn>
@@ -1109,7 +1206,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-card>
               </v-dialog>
             </v-container>
-            <v-container fluid v-if="ui.curview === 'sub'">
+            <v-container fluid v-else-if="ui.curview === 'sub'">
               <v-card class="mx-auto" v-if="appsubs.length > 0">
                 <v-list nav dense>
                   <v-subheader inset>
@@ -1121,7 +1218,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                       </template>
                       <span>手动更新订阅</span>
                     </v-tooltip>
-                    <v-btn icon @click="ui.addAppSubDialog.show = true"><v-icon color="green">mdi-plus-circle</v-icon></v-btn>
+                    <v-btn icon @click="ui.addAppSubDialog.show = true"><v-icon color="primary">mdi-plus-circle</v-icon></v-btn>
                   </v-subheader>
                   <v-list-item two-line dense v-for="(sub, subIdx) in appsubs" :key="sub.id" @click="onGoToRepo(sub.repo)">
                     <v-list-item-avatar v-if="sub.icon"><v-img :src="sub.icon"></v-img></v-list-item-avatar>
@@ -1129,7 +1226,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                     <v-list-item-content>
                       <v-list-item-title>
                         {{ sub.name ? sub.name : '匿名订阅' }} ({{ sub.apps.length }})
-                        <v-chip v-if="sub.isErr === true" color="pink" x-small class="ml-4">格式错误</v-chip>
+                        <v-chip v-if="sub.isErr === true" color="pink" dark x-small class="ml-4">格式错误</v-chip>
                       </v-list-item-title>
                       <v-list-item-subtitle>{{ sub.repo ? sub.repo : sub._raw.url }}</v-list-item-subtitle>
                       <v-list-item-subtitle color="blue">{{ sub.author ? sub.author : '@anonymous' }}</v-list-item-subtitle>
@@ -1141,8 +1238,18 @@ function printHtml(data, curapp = null, curview = 'app') {
                           <v-btn icon v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
                         </template>
                         <v-list dense>
-                          <v-list-item v-clipboard:copy="sub._raw.url" v-clipboard:success="onCopy">
+                          <v-list-item @click="onRefreshAppSub(sub)">
+                            <v-list-item-title>更新</v-list-item-title>
+                          </v-list-item>
+                          <v-list-item @click="" v-clipboard:copy="sub._raw.url" v-clipboard:success="onCopy">
                             <v-list-item-title>复制</v-list-item-title>
+                          </v-list-item>
+                          <v-divider></v-divider>
+                          <v-list-item v-if="subIdx > 0" @click="onMoveSub(subIdx, -1)">
+                            <v-list-item-title>上移</v-list-item-title>
+                          </v-list-item>
+                          <v-list-item v-if="subIdx + 1 < appsubs.length" @click="onMoveSub(subIdx, 1)">
+                            <v-list-item-title>下移</v-list-item-title>
                           </v-list-item>
                           <v-divider></v-divider>
                           <v-list-item @click="onDelAppSub(sub)">
@@ -1168,7 +1275,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   </v-card-text>
                   <v-divider></v-divider>
                   <v-card-actions>
-                    <v-btn text small v-clipboard:copy="ui.addAppSubDialog.url" v-clipboard:success="onCopy">复制</v-btn>
+                    <v-btn text small @click="" v-clipboard:copy="ui.addAppSubDialog.url" v-clipboard:success="onCopy">复制</v-btn>
                     <v-btn text small @click="onAddAppSubPaste">粘粘</v-btn>
                     <v-spacer></v-spacer>
                     <v-btn text small color="grey darken-1" text @click="ui.addAppSubDialog.show = false">取消</v-btn>
@@ -1177,7 +1284,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-card>
               </v-dialog>
             </v-container>
-            <v-container fluid v-if="ui.curview === 'my'">
+            <v-container fluid v-else-if="ui.curview === 'my'">
               <v-card class="mx-auto">
                 <v-card-title class="headline">
                   {{ box.usercfgs.name ? box.usercfgs.name : '大侠, 留个名字吧!' }}
@@ -1194,6 +1301,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                   </v-chip-group>
                 </v-card-text>
                 <v-card-actions>
+                  <v-btn text dense color="red" @click="onGoToRevert">抹掉数据</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn @click="ui.impGlobalBakDialog.show = true">导入</v-btn>
                   <v-btn @click="onGlobalBak">备份</v-btn>
@@ -1216,7 +1324,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                           <v-btn icon v-on="on"><v-icon>mdi-dots-vertical</v-icon></v-btn>
                         </template>
                         <v-list dense>
-                          <v-list-item v-clipboard:copy="JSON.stringify(boxdat)" v-clipboard:success="onCopy">
+                          <v-list-item @click="" v-clipboard:copy="JSON.stringify(boxdat)" v-clipboard:success="onCopy">
                             <v-list-item-title>复制</v-list-item-title>
                           </v-list-item>
                           <v-divider></v-divider>
@@ -1237,8 +1345,8 @@ function printHtml(data, curapp = null, curview = 'app') {
                   <v-card-title>个人资料</v-card-title>
                   <v-divider></v-divider>
                   <v-card-text>
-                  <v-text-field label="昵称" v-model="box.usercfgs.name" hint="少侠请留名!"></v-text-field>
-                  <v-text-field label="头像 (选填)" v-model="box.usercfgs.icon" hint="头像链接, 建议直接从 GitHub 获取!"></v-text-field>
+                    <v-text-field label="昵称" v-model="box.usercfgs.name" hint="少侠请留名!"></v-text-field>
+                    <v-text-field label="头像 (选填)" v-model="box.usercfgs.icon" hint="头像链接, 建议直接从 GitHub 获取!"></v-text-field>
                   </v-card-text>
                   <v-divider></v-divider>
                   <v-card-actions>
@@ -1249,7 +1357,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-card>
               </v-dialog>
             </v-container>
-            <v-snackbar top color="success" v-model="ui.snackbar.show" :timeout="ui.snackbar.timeout">
+            <v-snackbar top color="primary" v-model="ui.snackbar.show" :timeout="ui.snackbar.timeout">
               {{ ui.snackbar.text }}
               <template v-slot:action>
                 <v-btn text @click="ui.snackbar.show = false">关闭</v-btn>
@@ -1262,7 +1370,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="grey darken-1" text @click="ui.reloadConfirmDialog.show = false">稍候</v-btn>
-                  <v-btn color="green darken-1" text @click="reload">马上刷新 {{ ui.reloadConfirmDialog.sec ? '(' + ui.reloadConfirmDialog.sec + ')' : '' }}</v-btn>
+                  <v-btn color="primary darken-1" text @click="reload">马上刷新 {{ ui.reloadConfirmDialog.sec ? '(' + ui.reloadConfirmDialog.sec + ')' : '' }}</v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
@@ -1279,7 +1387,7 @@ function printHtml(data, curapp = null, curview = 'app') {
                 </v-card-text>
                 <v-divider></v-divider>
                 <v-card-actions>
-                  <v-btn text small v-clipboard:copy="ui.impGlobalBakDialog.bak" v-clipboard:success="onCopy">复制</v-btn>
+                  <v-btn text small @click="" v-clipboard:copy="ui.impGlobalBakDialog.bak" v-clipboard:success="onCopy">复制</v-btn>
                   <v-btn text small @click="onImpGlobalBakPaste">粘粘</v-btn>
                   <v-spacer></v-spacer>
                   <v-btn text small color="grey darken-1" text @click="ui.impGlobalBakDialog.show = false">取消</v-btn>
@@ -1289,24 +1397,24 @@ function printHtml(data, curapp = null, curview = 'app') {
             </v-dialog>
           </v-main>
           <v-expand-transition>
-            <v-bottom-navigation v-model="ui.curview" app v-show="ui.navi.show && !box.usercfgs.isHideNavi">
+            <v-bottom-navigation app v-model="ui.curview" v-show="ui.navi.show && !box.usercfgs.isHideNavi" color="primary">
               <v-btn value="home">
                 <span>首页</span>
                 <v-icon>mdi-home</v-icon>
               </v-btn>
-              <v-btn v-if="ui.curview !== 'appsession'" value="app">
+              <v-btn v-if="ui.curview !== 'appsession'" value="app" @dblclick="onBottomNaviDblClick">
                 <span>应用</span>
                 <v-icon>mdi-application</v-icon>
               </v-btn>
-              <v-btn v-if="ui.curview === 'appsession'" value="appsession">
+              <v-btn v-if="ui.curview === 'appsession'" value="appsession" @dblclick="onBottomNaviDblClick">
                 <span>应用</span>
                 <v-icon>mdi-application</v-icon>
               </v-btn>
-              <v-btn value="sub">
+              <v-btn value="sub" @dblclick="onBottomNaviDblClick">
                 <span>订阅</span>
                 <v-icon>mdi-database</v-icon>
               </v-btn>
-              <v-btn value="my">
+              <v-btn value="my" @dblclick="onBottomNaviDblClick">
                 <template v-if="box.usercfgs.icon">
                   <span v-if="!box.usercfgs.isHideMyTitle">我的</span>
                   <v-avatar :size="box.usercfgs.isHideMyTitle ? 36 : 24">
@@ -1325,21 +1433,25 @@ function printHtml(data, curapp = null, curview = 'app') {
               <v-subheader class="my-4">
                 <v-btn text @click="ui.versheet.show = false, ui.updatesheet.show = true">升级教程</v-btn>
                 <v-spacer></v-spacer>
-                <v-btn text>新版本</v-btn>
+                <v-btn text v-if="newVersion">新版本</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn text @click="ui.versheet.show = false">朕, 知道了!</v-btn>
               </v-subheader>
               <v-card-text>
-                <v-timeline dense>
+                <v-timeline dense color="primary">
                   <v-timeline-item small v-for="(ver, verIdx) in box.versions" :key="ver.version">
-                    <div class="py-4">
-                      <h2 v-if="box.syscfgs.version === ver.version" class="headline font-weight-bold mb-4 green--text">v{{ ver.version }} (当前)</h2>
-                      <h2 v-else class="headline font-weight-bold mb-4 grey--text">v{{ ver.version }}</h2>
-                      <template v-for="(note, noteIdx) in ver.notes">
-                        <strong>{{ note.name }}</strong>
-                        <ul><li v-for="(desc, descIdx) in note.descs">{{ desc }}</li></ul>
-                      </template>
-                    </div>
+                    <h2 v-if="box.syscfgs.version === ver.version" class="headline font-weight-bold mb-4 green--text">
+                      v{{ ver.version }} (当前)
+                    </h2>
+                    <h2 v-else class="headline font-weight-bold mb-4 grey--text">
+                      v{{ ver.version }}
+                    </h2>
+                    <template v-for="(note, noteIdx) in ver.notes">
+                      <strong>{{ note.name }}</strong>
+                      <ul>
+                        <li v-for="(desc, descIdx) in note.descs">{{ desc }}</li>
+                      </ul>
+                    </template>
                   </v-timeline-item>
                 </v-timeline>
               </v-card-text>
@@ -1370,57 +1482,64 @@ function printHtml(data, curapp = null, curview = 'app') {
                 <v-card-text>
                   <p class="subtitle-1">【安装模块】</p>
                   <p class="body-1">
-                    首页 &gt; 模块 &gt; 安装新模块
-                    https://github.com/chavyleung/scripts/raw/master/surge.box.sgmodule
+                    首页 &gt; 模块 &gt; 安装新模块 https://github.com/chavyleung/scripts/raw/master/surge.box.sgmodule
                   </p>
                   <p class="body-2">最后重启 Surge 代理 (首页右上角的开关)</p>
                 </v-card-text>
                 <v-divider></v-divider>
                 <v-card-text>
                   <p class="subtitle-1">【更新模块】</p>
-                  <p class="body-1">首页 &gt; Surge图标 (左上角) &gt; 外部资源 &gt; 全部更新</p>
+                  <p class="body-1">
+                    首页 &gt; Surge图标 (左上角) &gt; 外部资源 &gt; 全部更新
+                  </p>
                   <p class="body-2">最后重启 Surge 代理 (首页右上角的开关)</p>
                 </v-card-text>
               </v-card>
               <v-card flat v-else-if="box.syscfgs.env === 'QuanX'">
-                <v-card-title>QuanX TF 或 商店 (购买超 90 天)</v-card-title>
+                <v-card-title>QuanX TF 或 商店 (购买超 30 天)</v-card-title>
                 <v-card-text>
                   <p class="subtitle-1">【远程订阅】</p>
                   <p class="body-1">
-                    风车 &gt; 重写 &gt; 引用 &gt; 添加 (右上角)
-                    https://github.com/chavyleung/scripts/raw/master/QuantumultX.box.remote.conf
+                    风车 &gt; 重写 &gt; 引用 &gt; 添加 (右上角) https://github.com/chavyleung/scripts/raw/master/QuantumultX.box.remote.conf
                   </p>
                   <p class="subtitle-1">【订阅更新】</p>
-                  <p class="body-2">长按风车 &gt; 刷新 (左下角) &gt; 重启代理 (主界面右上角的开关)</p>
-                  <p class="caption">注意: 不是能只更新订阅链接, 必须长按风车全部更新!</p>
+                  <p class="body-2">
+                    长按风车 &gt; 刷新 (左下角) &gt; 重启代理 (主界面右上角的开关)
+                  </p>
+                  <p class="caption">
+                    注意: 不是能只更新订阅链接, 必须长按风车全部更新!
+                  </p>
                 </v-card-text>
                 <v-divider></v-divider>
-                <v-card-title>QuanX 商店 (购买少于 90 天)</v-card-title>
+                <v-card-title>QuanX 商店 (购买少于 30 天)</v-card-title>
                 <v-card-text>
                   <p class="subtitle-1">【本地更新】</p>
-                  <p class="body-2">下载最新脚本 &gt; 重启代理 (主界面右上角的开关)</p>
+                  <p class="body-2">
+                    下载最新脚本 &gt; 重启代理 (主界面右上角的开关)
+                  </p>
                 </v-card-text>
               </v-card>
               <v-card flat v-if="box.syscfgs.env === 'Loon'">
                 <v-card-text>
                   <p class="subtitle-1">【远程订阅】</p>
                   <p class="body-1">
-                    配置 (底栏) &gt; 脚本 &gt; 订阅脚本 &gt; 添加 (右上角图标)
-                    https://github.com/chavyleung/scripts/raw/master/loon.box.conf
+                    配置 (底栏) &gt; 脚本 &gt; 订阅脚本 &gt; 添加 (右上角图标) https://github.com/chavyleung/scripts/raw/master/loon.box.conf
                   </p>
                   <p class="body-2">最后重启 Loon 代理 (首页右上角的开关)</p>
                 </v-card-text>
                 <v-divider></v-divider>
                 <v-card-text>
                   <p class="subtitle-1">【订阅更新】</p>
-                  <p class="body-1">配置 (底栏) &gt; 脚本 &gt; 订阅脚本 &gt; 刷新 (右上角图标)</p>
+                  <p class="body-1">
+                    配置 (底栏) &gt; 脚本 &gt; 订阅脚本 &gt; 刷新 (右上角图标)
+                  </p>
                   <p class="body-2">最后重启 Loon 代理 (首页右上角的开关)</p>
                 </v-card-text>
               </v-card>
             </v-sheet>
           </v-bottom-sheet>
           <v-overlay v-model="ui.overlay.show" :opacity="0.7">
-            <v-progress-circular indeterminate size="64"></v-progress-circular>
+            <v-progress-circular indeterminate :value="ui.overlay.val" :size="64" color="primary"></v-progress-circular>
           </v-overlay>
         </v-app>
       </div>
@@ -1444,13 +1563,18 @@ function printHtml(data, curapp = null, curview = 'app') {
                 curapp: ${curapp},
                 curappTabs: { curtab: 'sessions' },
                 curappSessions: null,
-                overlay: { show: false },
+                overlay: { show: false, val: 60 },
                 autocomplete: { curapp: null },
                 refreshtip: { show: false },
                 modSessionDialog: { show: false, session: null },
                 editProfileDialog: { show: false, bak: '' },
                 impGlobalBakDialog: { show: false, bak: '' },
-                reloadConfirmDialog: { show: false, sec: 0, title: '操作成功', message: '是否马上刷新页面?' },
+                reloadConfirmDialog: {
+                  show: false,
+                  sec: 0,
+                  title: '操作成功',
+                  message: '是否马上刷新页面?'
+                },
                 impSessionDialog: { show: false, impval: '' },
                 addAppSubDialog: { show: false, url: '' },
                 versheet: { show: false },
@@ -1466,7 +1590,13 @@ function printHtml(data, curapp = null, curview = 'app') {
             }
           },
           computed: {
-            darkMode: function() {
+            fullscreen: function () {
+              return window.navigator.standalone
+            },
+            color: function () {
+              return this.$vuetify.theme.themes[this.darkMode ? 'dark' : 'light'].primary
+            },
+            darkMode: function () {
               const isSysDark = window.matchMedia('(prefers-color-scheme: dark)').matches
               let isDark = !this.box.usercfgs.isLight
               if (this.box.usercfgs.theme === 'auto') {
@@ -1478,7 +1608,15 @@ function printHtml(data, curapp = null, curview = 'app') {
               }
               return isDark
             },
-            iconIdx: function() {
+            newVersion: function () {
+              const curver = this.box.syscfgs.version
+              const vers = this.box.versions
+              if (curver && vers && vers.length > 0) {
+                const lastestVer = vers[0].version
+                return this.compareVersion(lastestVer, curver) > 0
+              }
+            },
+            iconIdx: function () {
               let idx = 1
               if (this.box.usercfgs.theme === 'auto') {
                 if (this.darkMode === true) {
@@ -1493,7 +1631,7 @@ function printHtml(data, curapp = null, curview = 'app') {
               const apps = []
               apps.push(...this.box.sysapps)
               this.box.appsubs.forEach((sub, subIdx) => apps.push(...sub.apps))
-              apps.sort((a, b) => a.id.localeCompare(b.id))
+              apps.sort((a, b) => a.name.localeCompare(b.name))
               return apps
             },
             appcnt: function () {
@@ -1511,6 +1649,13 @@ function printHtml(data, curapp = null, curview = 'app') {
             },
             sessioncnt: function () {
               return Array.isArray(this.box.sessions) ? this.box.sessions.length : 0
+            },
+            cursession: function () {
+              if (this.ui.curapp) {
+                const curSessionId = this.box.curSessions[this.ui.curapp.id]
+                return this.box.sessions.find((s) => s.id === curSessionId) || {}
+              }
+              return {}
             },
             boxdat: function () {
               const KEY_sessions = 'chavy_boxjs_sessions'
@@ -1531,11 +1676,12 @@ function printHtml(data, curapp = null, curview = 'app') {
                     dat[data.key] = data.val
                   }
                 })
-                app.settings && app.settings.forEach((setting, settingIdx) => {
-                  if (![undefined, null, 'null'].includes(setting.val)) {
-                    dat[setting.id] = setting.val
-                  }
-                })
+                app.settings &&
+                  app.settings.forEach((setting, settingIdx) => {
+                    if (![undefined, null, 'null'].includes(setting.val)) {
+                      dat[setting.id] = setting.val
+                    }
+                  })
               })
               this.box.appsubs.forEach((sub, subIdx) => {
                 sub.apps.forEach((app, appIdx) => {
@@ -1544,11 +1690,12 @@ function printHtml(data, curapp = null, curview = 'app') {
                       dat[data.key] = data.val
                     }
                   })
-                  app.settings && app.settings.forEach((setting, settingIdx) => {
-                    if (![undefined, null, 'null'].includes(setting.val)) {
-                      dat[setting.id] = setting.val
-                    }
-                  })
+                  app.settings &&
+                    app.settings.forEach((setting, settingIdx) => {
+                      if (![undefined, null, 'null'].includes(setting.val)) {
+                        dat[setting.id] = setting.val
+                      }
+                    })
                 })
               })
               return dat
@@ -1578,23 +1725,21 @@ function printHtml(data, curapp = null, curview = 'app') {
             'ui.curview': {
               handler(newval, oldval) {
                 this.ui.bfview = oldval
-                const isFullScreen = window.navigator.standalone
                 if (newval === 'app') {
                   this.ui.curapp = null
                   this.ui.curappSessions = null
                   var state = { title: 'BoxJs' }
                   document.title = state.title
-                  if (!isFullScreen) {
-                    history.pushState(state, '', '/home')
+                  if (!this.fullscreen) {
+                    history.pushState(state, '', '/app')
                   }
-                  this.$vuetify.goTo(this.ui.scrollY, { duration: 0, offset: 0 })
                 } else if (newval === 'sub') {
                   this.ui.curapp = null
                   this.ui.curappSessions = null
                   this.showRefreshTip()
                   var state = { title: 'BoxJs' }
                   document.title = state.title
-                  if (!isFullScreen) {
+                  if (!this.fullscreen) {
                     history.pushState(state, '', '/sub')
                   }
                 } else if (newval === 'my') {
@@ -1602,16 +1747,20 @@ function printHtml(data, curapp = null, curview = 'app') {
                   this.ui.curappSessions = null
                   var state = { title: 'BoxJs' }
                   document.title = state.title
-                  if (!isFullScreen) {
+                  if (!this.fullscreen) {
                     history.pushState(state, '', '/my')
                   }
                 }
+                this.$vuetify.goTo(newval === 'app' ? this.ui.scrollY : 0, {
+                  duration: 0,
+                  offset: 0
+                })
               }
             },
             'ui.reloadConfirmDialog.sec': {
               handler(newval, oldval) {
                 if (newval !== 0) {
-                  setTimeout(() => this.ui.reloadConfirmDialog.sec -= 1, 1000)
+                  setTimeout(() => (this.ui.reloadConfirmDialog.sec -= 1), 1000)
                 } else {
                   this.reload()
                 }
@@ -1641,7 +1790,7 @@ function printHtml(data, curapp = null, curview = 'app') {
           },
           methods: {
             moment(date) {
-              return timeago.format(date, 'zh_CN');
+              return timeago.format(date, 'zh_CN')
             },
             appfilter(item, queryText, itemText) {
               return item.id.includes(queryText) || item.name.includes(queryText)
@@ -1667,6 +1816,13 @@ function printHtml(data, curapp = null, curview = 'app') {
               const fromIdx = favIdx
               const toIdx = favIdx + moveCnt
               this.box.usercfgs.favapps.splice(fromIdx, 1, ...this.box.usercfgs.favapps.splice(toIdx, 1, this.box.usercfgs.favapps[fromIdx]))
+              this.onUserCfgsChange()
+            },
+            onMoveSub(subIdx, moveCnt) {
+              const fromIdx = subIdx
+              const toIdx = subIdx + moveCnt
+              this.box.appsubs.splice(fromIdx, 1, ...this.box.appsubs.splice(toIdx, 1, this.box.appsubs[fromIdx]))
+              this.box.usercfgs.appsubs.splice(fromIdx, 1, ...this.box.usercfgs.appsubs.splice(toIdx, 1, this.box.usercfgs.appsubs[fromIdx]))
               this.onUserCfgsChange()
             },
             onFav(app) {
@@ -1696,18 +1852,26 @@ function printHtml(data, curapp = null, curview = 'app') {
               this.ui.curapp = app
               this.ui.curappSessions = this.box.sessions.filter((s) => s.appId === this.ui.curapp.id)
               this.ui.curview = 'appsession'
-              var state = { title: 'BoxJs - ' + this.ui.curapp.name, url: window.location.href }
-              const isFullScreen = window.navigator.standalone
-              if (!isFullScreen) {
+              var state = {
+                title: 'BoxJs - ' + this.ui.curapp.name,
+                url: window.location.href
+              }
+              if (!this.fullscreen) {
                 history.pushState(state, '', '/app/' + this.ui.curapp.id)
               }
               document.title = state.title
             },
             onClearCurAppSessionData(app, datas, data) {
-              data.val = ''
               this.ui.overlay.show = true
+              const setting = app.settings.find((setting) => setting.id === data.key)
+              if (setting) {
+                data.val = setting.defval ? setting.defval : ''
+                setting.val = data.val
+              } else {
+                data.val = ''
+              }
               axios.post('/api', JSON.stringify({ cmd: 'saveCurAppSession', val: app })).finally(() => {
-                this.onReload()
+                this.ui.overlay.show = false
               })
             },
             onSaveSessionTo(session) {
@@ -1720,12 +1884,20 @@ function printHtml(data, curapp = null, curview = 'app') {
                 this.onReload()
               })
             },
-            onModSession () {
+            onModSession() {
               this.ui.modSessionDialog.show = false
               this.ui.overlay.show = true
-              axios.post('/api', JSON.stringify({ cmd: 'onModSession', val: this.ui.modSessionDialog.session })).finally(() => {
-                this.onReload()
-              })
+              axios
+                .post(
+                  '/api',
+                  JSON.stringify({
+                    cmd: 'onModSession',
+                    val: this.ui.modSessionDialog.session
+                  })
+                )
+                .finally(() => {
+                  this.onReload()
+                })
             },
             onSaveSession() {
               const session = {
@@ -1743,9 +1915,23 @@ function printHtml(data, curapp = null, curview = 'app') {
             },
             onSaveSettings() {
               this.ui.overlay.show = true
-              axios.post('/api', JSON.stringify({ cmd: 'saveSettings', val: this.ui.curapp.settings })).finally(() => {
-                this.onReload()
-              })
+              axios
+                .post(
+                  '/api',
+                  JSON.stringify({
+                    cmd: 'saveSettings',
+                    val: this.ui.curapp.settings
+                  })
+                )
+                .finally(() => {
+                  this.ui.curapp.settings.forEach((setting) => {
+                    const data = this.ui.curapp.datas.find((dat) => dat.key === setting.id)
+                    if (data) {
+                      data.val = setting.val
+                    }
+                  })
+                  this.ui.overlay.show = false
+                })
             },
             onImpSessionPaste() {
               navigator.clipboard.readText().then((text) => {
@@ -1804,16 +1990,23 @@ function printHtml(data, curapp = null, curview = 'app') {
                 this.onReload()
               })
             },
-            onRefreshAppSubs(){
+            onRefreshAppSub(sub) {
+              axios.post('/api', JSON.stringify({ cmd: 'refreshAppSubs', val: sub._raw.id })).finally(() => {
+                this.onReload()
+              })
+            },
+            onRefreshAppSubs() {
               this.ui.overlay.show = true
               axios.post('/api', JSON.stringify({ cmd: 'refreshAppSubs', val: null })).finally(() => {
                 this.onReload()
               })
             },
             reload() {
+              this.ui.overlay.show = true
               window.location.reload()
             },
             onReload() {
+              this.ui.overlay.show = true
               window.location.reload()
             },
             onDelSession(session) {
@@ -1854,6 +2047,9 @@ function printHtml(data, curapp = null, curview = 'app') {
                 this.onReload()
               })
             },
+            onGoToRevert() {
+              window.open('/revert')
+            },
             onGlobalBak() {
               const env = this.box.syscfgs.env
               const version = this.box.syscfgs.version
@@ -1888,7 +2084,7 @@ function printHtml(data, curapp = null, curview = 'app') {
             },
             showRefreshTip() {
               this.ui.refreshtip.show = true
-              setTimeout(() => this.ui.refreshtip.show = false, 2000)
+              setTimeout(() => (this.ui.refreshtip.show = false), 2000)
             },
             compareVersion(v1, v2) {
               var _v1 = v1.split('.'),
@@ -1898,27 +2094,60 @@ function printHtml(data, curapp = null, curview = 'app') {
             },
             onGoToRepo(url) {
               window.open(url)
+            },
+            getContributors() {
+              const url = 'https://api.github.com/repos/chavyleung/scripts/contributors'
+              axios.get(url).then((resp) => {
+                this.box.syscfgs.contributors = []
+                resp.data.forEach((contributor) => {
+                  if ([29748519, 39037656].includes(contributor.id)) return
+                  const { login: id, html_url: repo, avatar_url: icon } = contributor
+                  this.box.syscfgs.contributors.push({ id, repo, icon })
+                })
+              })
+            },
+            onRunScript(url) {
+              this.ui.overlay.show = true
+  
+              // const [key, addr] = this.box.usercfgs.httpapi.split('@')
+              // const apiurl = 'http://' + addr + '/v1/scripting/evaluate'
+              // const body = { script_text: this.ui.curapp.script_text, mock_type: 'cron', timeout: 5 }
+              // const opts = {headers: { 'X-Key': key, 'Accept': '*/*' }}
+              // axios.post(apiurl, body, opts)
+  
+              axios.post('/api', JSON.stringify({ cmd: 'runScript', val: url })).finally(() => {
+                this.ui.overlay.show = false
+              })
+            },
+            onBottomNaviDblClick() {
+              if (this.ui.curview === 'app') {
+                this.box.usercfgs.favapppanel = []
+                this.box.usercfgs.subapppanel = []
+                this.box.usercfgs.sysapppanel = []
+                this.onUserCfgsChange()
+              } else if (this.ui.curview === 'sub') {
+                this.onRefreshAppSubs()
+              }
+              this.$vuetify.goTo(0, { duration: 0, offset: 0 })
             }
           },
-          mounted: function () {
+          beforeMount: function () {
             this.$vuetify.theme.dark = this.darkMode
+            this.$vuetify.theme.themes.light.primary = this.box.usercfgs.color_light_primary || '#F7BB0E'
+            this.$vuetify.theme.themes.dark.primary = this.box.usercfgs.color_dark_primary || '#2196F3'
+          },
+          mounted: function () {
+            this.getContributors()
+            this.ui.navi.show = true
+            this.ui.box.show = true
             if (this.ui.curapp) {
               this.goAppSessionView(this.ui.curapp)
             }
-            setTimeout(() => {
-              this.ui.navi.show = true
-              this.ui.box.show = true
-            }, 500)
-            const curver = this.box.syscfgs.version
-            const vers = this.box.versions
             if (this.ui.curview === 'sub') {
               this.showRefreshTip()
             }
-            if (curver && Array.isArray(vers)) {
-              const lastestVer = vers[0].version
-              if (this.compareVersion(lastestVer, curver) > 0) {
-                this.ui.versheet.show = true
-              }
+            if (this.newVersion) {
+              this.ui.versheet.show = true
             }
           }
         })
@@ -1934,4 +2163,4 @@ function printJson() {
 }
 
 // prettier-ignore
-function Env(t,s){return new class{constructor(t,s){this.name=t,this.data=null,this.dataFile="box.dat",this.logs=[],this.logSeparator="\n",this.startTime=(new Date).getTime(),Object.assign(this,s),this.log("",`\ud83d\udd14${this.name}, \u5f00\u59cb!`)}isNode(){return"undefined"!=typeof module&&!!module.exports}isQuanX(){return"undefined"!=typeof $task}isSurge(){return"undefined"!=typeof $httpClient}isLoon(){return"undefined"!=typeof $loon}loaddata(){if(!this.isNode())return{};{this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),s=this.path.resolve(process.cwd(),this.dataFile),e=this.fs.existsSync(t),i=!e&&this.fs.existsSync(s);if(!e&&!i)return{};{const i=e?t:s;try{return JSON.parse(this.fs.readFileSync(i))}catch(t){return{}}}}}writedata(){if(this.isNode()){this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),s=this.path.resolve(process.cwd(),this.dataFile),e=this.fs.existsSync(t),i=!e&&this.fs.existsSync(s),o=JSON.stringify(this.data);e?this.fs.writeFileSync(t,o):i?this.fs.writeFileSync(s,o):this.fs.writeFileSync(t,o)}}lodash_get(t,s,e){const i=s.replace(/\[(\d+)\]/g,".$1").split(".");let o=t;for(const t of i)if(o=Object(o)[t],void 0===o)return e;return o}lodash_set(t,s,e){return Object(t)!==t?t:(Array.isArray(s)||(s=s.toString().match(/[^.[\]]+/g)||[]),s.slice(0,-1).reduce((t,e,i)=>Object(t[e])===t[e]?t[e]:t[e]=Math.abs(s[i+1])>>0==+s[i+1]?[]:{},t)[s[s.length-1]]=e,t)}getdata(t){let s=this.getval(t);if(/^@/.test(t)){const[,e,i]=/^@(.*?)\.(.*?)$/.exec(t),o=e?this.getval(e):"";if(o)try{const t=JSON.parse(o);s=t?this.lodash_get(t,i,""):s}catch(t){s=""}}return s}setdata(t,s){let e=!1;if(/^@/.test(s)){const[,i,o]=/^@(.*?)\.(.*?)$/.exec(s),h=this.getval(i),a=i?"null"===h?null:h||"{}":"{}";try{const s=JSON.parse(a);this.lodash_set(s,o,t),e=this.setval(JSON.stringify(s),i),console.log(`${i}: ${JSON.stringify(s)}`)}catch(s){const h={};this.lodash_set(h,o,t),e=this.setval(JSON.stringify(h),i),console.log(`${i}: ${JSON.stringify(h)}`)}}else e=$.setval(t,s);return e}getval(t){return this.isSurge()||this.isLoon()?$persistentStore.read(t):this.isQuanX()?$prefs.valueForKey(t):this.isNode()?(this.data=this.loaddata(),this.data[t]):this.data&&this.data[t]||null}setval(t,s){return this.isSurge()||this.isLoon()?$persistentStore.write(t,s):this.isQuanX()?$prefs.setValueForKey(t,s):this.isNode()?(this.data=this.loaddata(),this.data[s]=t,this.writedata(),!0):this.data&&this.data[s]||null}initGotEnv(t){this.got=this.got?this.got:require("got"),this.cktough=this.cktough?this.cktough:require("tough-cookie"),this.ckjar=this.ckjar?this.ckjar:new this.cktough.CookieJar,t&&(t.headers=t.headers?t.headers:{},void 0===t.headers.Cookie&&void 0===t.cookieJar&&(t.cookieJar=this.ckjar))}get(t,s=(()=>{})){t.headers&&(delete t.headers["Content-Type"],delete t.headers["Content-Length"]),this.isSurge()||this.isLoon()?$httpClient.get(t,(t,e,i)=>{!t&&e&&(e.body=i,e.statusCode=e.status,s(t,e,i))}):this.isQuanX()?$task.fetch(t).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t)):this.isNode()&&(this.initGotEnv(t),this.got(t).on("redirect",(t,s)=>{try{const e=t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();this.ckjar.setCookieSync(e,null),s.cookieJar=this.ckjar}catch(t){this.logErr(t)}}).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t)))}post(t,s=(()=>{})){if(t.body&&t.headers&&!t.headers["Content-Type"]&&(t.headers["Content-Type"]="application/x-www-form-urlencoded"),delete t.headers["Content-Length"],this.isSurge()||this.isLoon())$httpClient.post(t,(t,e,i)=>{!t&&e&&(e.body=i,e.statusCode=e.status),s(t,e,i)});else if(this.isQuanX())t.method="POST",$task.fetch(t).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t));else if(this.isNode()){this.initGotEnv(t);const{url:e,...i}=t;this.got.post(e,i).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t))}}msg(s=t,e="",i="",o){const h=t=>!t||!this.isLoon()&&this.isSurge()?t:"string"==typeof t?this.isLoon()?t:this.isQuanX()?{"open-url":t}:void 0:"object"==typeof t&&(t["open-url"]||t["media-url"])?this.isLoon()?t["open-url"]:this.isQuanX()?t:void 0:void 0;this.isSurge()||this.isLoon()?$notification.post(s,e,i,h(o)):this.isQuanX()&&$notify(s,e,i,h(o)),this.logs.push("","==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="),this.logs.push(s),e&&this.logs.push(e),i&&this.logs.push(i)}log(...t){t.length>0?this.logs=[...this.logs,...t]:console.log(this.logs.join(this.logSeparator))}logErr(t,s){const e=!this.isSurge()&&!this.isQuanX()&&!this.isLoon();e?$.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t.stack):$.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t.message)}wait(t){return new Promise(s=>setTimeout(s,t))}done(t={}){const s=(new Date).getTime(),e=(s-this.startTime)/1e3;this.log("",`\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${e} \u79d2`),this.log(),(this.isSurge()||this.isQuanX()||this.isLoon())&&$done(t)}}(t,s)}
+function Env(t,s){return new class{constructor(t,s){this.name=t,this.data=null,this.dataFile="box.dat",this.logs=[],this.logSeparator="\n",this.startTime=(new Date).getTime(),Object.assign(this,s),this.log("",`\ud83d\udd14${this.name}, \u5f00\u59cb!`)}isNode(){return"undefined"!=typeof module&&!!module.exports}isQuanX(){return"undefined"!=typeof $task}isSurge(){return"undefined"!=typeof $httpClient&&"undefined"==typeof $loon}isLoon(){return"undefined"!=typeof $loon}getScript(t){return new Promise(s=>{$.get({url:t},(t,e,i)=>s(i))})}runScript(t){return new Promise(s=>{let e=this.getdata("@chavy_boxjs_userCfgs.httpapi");e=e?e.replace(/\n/g,"").trim():e;const[i,o]=e.split("@"),h={url:`http://${o}/v1/scripting/evaluate`,body:{script_text:t,mock_type:"cron",timeout:5},headers:{"X-Key":i,Accept:"*/*"}};$.post(h,(t,e,i)=>s(i))})}loaddata(){if(!this.isNode())return{};{this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),s=this.path.resolve(process.cwd(),this.dataFile),e=this.fs.existsSync(t),i=!e&&this.fs.existsSync(s);if(!e&&!i)return{};{const i=e?t:s;try{return JSON.parse(this.fs.readFileSync(i))}catch(t){return{}}}}}writedata(){if(this.isNode()){this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),s=this.path.resolve(process.cwd(),this.dataFile),e=this.fs.existsSync(t),i=!e&&this.fs.existsSync(s),o=JSON.stringify(this.data);e?this.fs.writeFileSync(t,o):i?this.fs.writeFileSync(s,o):this.fs.writeFileSync(t,o)}}lodash_get(t,s,e){const i=s.replace(/\[(\d+)\]/g,".$1").split(".");let o=t;for(const t of i)if(o=Object(o)[t],void 0===o)return e;return o}lodash_set(t,s,e){return Object(t)!==t?t:(Array.isArray(s)||(s=s.toString().match(/[^.[\]]+/g)||[]),s.slice(0,-1).reduce((t,e,i)=>Object(t[e])===t[e]?t[e]:t[e]=Math.abs(s[i+1])>>0==+s[i+1]?[]:{},t)[s[s.length-1]]=e,t)}getdata(t){let s=this.getval(t);if(/^@/.test(t)){const[,e,i]=/^@(.*?)\.(.*?)$/.exec(t),o=e?this.getval(e):"";if(o)try{const t=JSON.parse(o);s=t?this.lodash_get(t,i,""):s}catch(t){s=""}}return s}setdata(t,s){let e=!1;if(/^@/.test(s)){const[,i,o]=/^@(.*?)\.(.*?)$/.exec(s),h=this.getval(i),a=i?"null"===h?null:h||"{}":"{}";try{const s=JSON.parse(a);this.lodash_set(s,o,t),e=this.setval(JSON.stringify(s),i),console.log(`${i}: ${JSON.stringify(s)}`)}catch(s){const h={};this.lodash_set(h,o,t),e=this.setval(JSON.stringify(h),i),console.log(`${i}: ${JSON.stringify(h)}`)}}else e=$.setval(t,s);return e}getval(t){return this.isSurge()||this.isLoon()?$persistentStore.read(t):this.isQuanX()?$prefs.valueForKey(t):this.isNode()?(this.data=this.loaddata(),this.data[t]):this.data&&this.data[t]||null}setval(t,s){return this.isSurge()||this.isLoon()?$persistentStore.write(t,s):this.isQuanX()?$prefs.setValueForKey(t,s):this.isNode()?(this.data=this.loaddata(),this.data[s]=t,this.writedata(),!0):this.data&&this.data[s]||null}initGotEnv(t){this.got=this.got?this.got:require("got"),this.cktough=this.cktough?this.cktough:require("tough-cookie"),this.ckjar=this.ckjar?this.ckjar:new this.cktough.CookieJar,t&&(t.headers=t.headers?t.headers:{},void 0===t.headers.Cookie&&void 0===t.cookieJar&&(t.cookieJar=this.ckjar))}get(t,s=(()=>{})){t.headers&&(delete t.headers["Content-Type"],delete t.headers["Content-Length"]),this.isSurge()||this.isLoon()?$httpClient.get(t,(t,e,i)=>{!t&&e&&(e.body=i,e.statusCode=e.status,s(t,e,i))}):this.isQuanX()?$task.fetch(t).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t)):this.isNode()&&(this.initGotEnv(t),this.got(t).on("redirect",(t,s)=>{try{const e=t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();this.ckjar.setCookieSync(e,null),s.cookieJar=this.ckjar}catch(t){this.logErr(t)}}).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t)))}post(t,s=(()=>{})){if(t.body&&t.headers&&!t.headers["Content-Type"]&&(t.headers["Content-Type"]="application/x-www-form-urlencoded"),delete t.headers["Content-Length"],this.isSurge()||this.isLoon())$httpClient.post(t,(t,e,i)=>{!t&&e&&(e.body=i,e.statusCode=e.status),s(t,e,i)});else if(this.isQuanX())t.method="POST",$task.fetch(t).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t));else if(this.isNode()){this.initGotEnv(t);const{url:e,...i}=t;this.got.post(e,i).then(t=>{const{statusCode:e,statusCode:i,headers:o,body:h}=t;s(null,{status:e,statusCode:i,headers:o,body:h},h)},t=>s(t))}}time(t){let s={"M+":(new Date).getMonth()+1,"d+":(new Date).getDate(),"H+":(new Date).getHours(),"m+":(new Date).getMinutes(),"s+":(new Date).getSeconds(),"q+":Math.floor(((new Date).getMonth()+3)/3),S:(new Date).getMilliseconds()};/(y+)/.test(t)&&(t=t.replace(RegExp.$1,((new Date).getFullYear()+"").substr(4-RegExp.$1.length)));for(let e in s)new RegExp("("+e+")").test(t)&&(t=t.replace(RegExp.$1,1==RegExp.$1.length?s[e]:("00"+s[e]).substr((""+s[e]).length)));return t}msg(s=t,e="",i="",o){const h=t=>!t||!this.isLoon()&&this.isSurge()?t:"string"==typeof t?this.isLoon()?t:this.isQuanX()?{"open-url":t}:void 0:"object"==typeof t&&(t["open-url"]||t["media-url"])?this.isLoon()?t["open-url"]:this.isQuanX()?t:void 0:void 0;this.isSurge()||this.isLoon()?$notification.post(s,e,i,h(o)):this.isQuanX()&&$notify(s,e,i,h(o)),this.logs.push("","==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="),this.logs.push(s),e&&this.logs.push(e),i&&this.logs.push(i)}log(...t){t.length>0?this.logs=[...this.logs,...t]:console.log(this.logs.join(this.logSeparator))}logErr(t,s){const e=!this.isSurge()&&!this.isQuanX()&&!this.isLoon();e?$.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t.stack):$.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t.message)}wait(t){return new Promise(s=>setTimeout(s,t))}done(t={}){const s=(new Date).getTime(),e=(s-this.startTime)/1e3;this.log("",`\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${e} \u79d2`),this.log(),(this.isSurge()||this.isQuanX()||this.isLoon())&&$done(t)}}(t,s)}

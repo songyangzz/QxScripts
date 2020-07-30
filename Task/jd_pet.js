@@ -1,6 +1,6 @@
 /*
 京东萌宠助手 搬得https://github.com/liuxiaoyucc/jd-helper/blob/master/pet/pet.js
-更新时间:2020-07-20
+更新时间:2020-07-28
 // quantumultx
 [task_local]
 #东东萌宠
@@ -10,7 +10,7 @@
 cron "5 6-18/6 * * *" script-path=https://raw.githubusercontent.com/nzw9314/QuantumultX/master/Task/jd_pet.js,tag=东东萌宠
 互助码shareCode请先手动运行脚本查看打印可看到
 一天只能帮助5个人。多出的助力码无效
-注：如果使用Node.js, 需自行安装'got'模块. 例: npm install got -g
+注：如果使用Node.js, 需自行安装'crypto-js,got,http-server,tough-cookie'模块. 例: npm install crypto-js http-server tough-cookie got --save
 */
 const name = '东东萌宠';
 const $ = new Env(name);
@@ -45,23 +45,21 @@ if (isBox) {
     }
   }
 }
-var petInfo = null;
-var taskInfo = null;
-let message = '';
-let subTitle = '';
-let goodsUrl = '';
+let petInfo = null, taskInfo = null, message = '', subTitle = '', goodsUrl = '', taskInfoKey = [];
+
 //按顺序执行, 尽量先执行不消耗狗粮的任务, 避免中途狗粮不够, 而任务还没做完
-// var function_map = {
-//     signInit: getSignReward, //每日签到
-//     threeMealInit: getThreeMealReward, //三餐
-//     browseSingleShopInit: getSingleShopReward, //浏览店铺
-//     //browseShopsInit: getBrowseShopsReward, //浏览店铺s, 目前只有一个店铺
-//     firstFeedInit: firstFeedInit, //首次喂食
-//     inviteFriendsInit: inviteFriendsInit, //邀请好友, 暂未处理
-//     feedReachInit: feedReachInit, //喂食10次任务  最后执行投食10次任务, 提示剩余狗粮是否够投食10次完成任务, 并询问要不要继续执行
-// };
-// function_map不再写固定死的，改成从初始化任务api那边拿取，避免6.22日下午京东服务器下架一个任务后，脚本对应不上，从而报错的bug
-var function_map = [];
+let function_map = {
+  signInit: signInit, //每日签到
+  threeMealInit: threeMealInit, //三餐
+  browseSingleShopInit: browseSingleShopInit, //浏览店铺1
+  browseSingleShopInit2: browseSingleShopInit2, //浏览店铺2
+  browseSingleShopInit3: browseSingleShopInit3, //浏览店铺3
+  browseShopsInit: browseShopsInit, //浏览店铺s, 目前只有一个店铺
+  firstFeedInit: firstFeedInit, //首次喂食
+  inviteFriendsInit: inviteFriendsInit, //邀请好友, 暂未处理
+  feedReachInit: feedReachInit, //喂食10次任务  最后执行投食10次任务, 提示剩余狗粮是否够投食10次完成任务, 并询问要不要继续执行
+}
+
 let gen = entrance();
 gen.next();
 /**
@@ -69,7 +67,9 @@ gen.next();
  */
 function* entrance() {
     if (!cookie) {
-      return $.msg(name, '【提示】请先获取cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/', { "open-url": "https://bean.m.jd.com/" });
+      $.msg(name, '【提示】请先获取cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/', { "open-url": "https://bean.m.jd.com/" });
+      $.done();
+      return
     }
     console.log('任务开始');
     yield initPetTown(); //初始化萌宠
@@ -78,15 +78,25 @@ function* entrance() {
     yield petSport(); // 遛弯
     yield slaveHelp();  // 助力, 在顶部shareCodes中填写需要助力的shareCode
     yield masterHelpInit();//获取助力信息
-
+    taskInfo['taskList'].forEach((val) => {
+      taskInfoKey.push(val);
+    })
     // 任务开始
-    for (let task_name of function_map) {
-        if (!taskInfo[task_name].finished) {
+    for (let task_name in function_map) {
+        if (taskInfoKey.indexOf(task_name) !== -1) {
+          taskInfoKey.splice(taskInfoKey.indexOf(task_name), 1);
+        }
+        if (taskInfo[task_name] && !taskInfo[task_name].finished) {
             console.log('任务' + task_name + '开始');
-            yield eval(task_name + '()');
+            // yield eval(task_name + '()');
+            yield function_map[task_name]();
         } else {
             console.log('任务' + task_name + '已完成');
         }
+    }
+    for (let item of taskInfoKey) {
+      console.log(`新任务 【${taskInfo[item].title}】 功能未开发，请反馈给脚本维护者@lxk0301\n`);
+      $.msg($.name, subTitle, `新的任务 【${taskInfo[item].title}】 功能未开发，请反馈给脚本维护者@lxk0301\n`, {"open-url": "https://t.me/JD_fruit_pet"})
     }
     yield feedPetsAgain();//所有任务做完后，检测剩余狗粮是否大于110g,大于就继续投食
     yield energyCollect();
@@ -223,7 +233,7 @@ async function slaveHelp() {
         }
     }
     if (helpPeoples && helpPeoples.length > 0) {
-        message += `【您助力的好友】${helpPeoples}\n`;
+        message += `【您助力的好友】${helpPeoples.substr(0, helpPeoples.length - 1)}\n`;
     }
 
     gen.next();
@@ -294,6 +304,23 @@ function browseSingleShopInit2() {
     }
   })
 }
+function browseSingleShopInit3() {
+  console.log('准备完成 去参与星品解锁计划');
+  const body = {"index":2,"version":1,"type":1};
+  const body2 = {"index":2,"version":1,"type":2}
+  request("getSingleShopReward", body).then(response => {
+    console.log(`①点击浏览指定店铺结果: ${JSON.stringify(response)}`);
+    if (response.code === '0' && response.resultCode === '0') {
+      request("getSingleShopReward", body2).then(response2 => {
+        console.log(`②浏览指定店铺结果: ${JSON.stringify(response2)}`);
+        if (response2.code === '0' && response2.resultCode === '0') {
+          message += `【去参与星品解锁计划】获取狗粮${response2.result.reward}g\n`;
+        }
+        gen.next();
+      })
+    }
+  })
+}
 // 三餐签到, 每天三段签到时间
 function threeMealInit() {
     console.log('准备三餐签到');
@@ -336,7 +363,9 @@ function initPetTown() {
         if (response.code === '0' && response.resultCode === '0' && response.message === 'success') {
             petInfo = response.result;
             if (petInfo.userStatus === 0) {
-              return $.msg(name, '【提示】此账号萌宠活动未开始，请手动去京东APP开启活动\n入口：我的->游戏与互动->查看更多', '', { "open-url": "openapp.jdmoble://" });
+              $.msg(name, '【提示】此账号萌宠活动未开始，请手动去京东APP开启活动\n入口：我的->游戏与互动->查看更多', '', { "open-url": "openapp.jdmoble://" });
+              $.done();
+              return
             }
             goodsUrl = response.result.goodsInfo && response.result.goodsInfo.goodsUrl;
             // console.log(`初始化萌宠信息完成: ${JSON.stringify(petInfo)}`);
@@ -344,8 +373,9 @@ function initPetTown() {
           gen.next();
         } else if (response.code === '0' && response.resultCode === '2001'){
             console.log(`初始化萌宠失败:  ${response.message}`);
-            return $.msg(name, '【提示】京东cookie已失效,请重新登录获取', 'https://bean.m.jd.com/', {"open-url": "https://bean.m.jd.com/"});
-            gen.return();
+            $.setdata('', 'CookieJD');//cookie失效，故清空cookie。
+            $.msg(name, '【提示】京东cookie已失效,请重新登录获取', 'https://bean.m.jd.com/', { "open-url": "https://bean.m.jd.com/" });
+            $.done();
         }
     })
 
@@ -428,7 +458,7 @@ async function masterHelpInit() {
       }
     } else {
       console.log("助力好友未达到5个")
-      message += `【额外奖励领取失败】原因：助力好友未达5个\n`;
+      message += `【额外奖励】领取失败，原因：助力好友未达5个\n`;
     }
     if (res.result.masterHelpPeoples && res.result.masterHelpPeoples.length > 0) {
       console.log('帮您助力的好友的名单开始')
@@ -464,7 +494,7 @@ function taskInit() {
             gen.return();
         }
         taskInfo = response.result;
-        function_map = taskInfo.taskList;
+        // function_map = taskInfo.taskList;
         console.log(`任务初始化完成: ${JSON.stringify(taskInfo)}`);
         gen.next();
     })

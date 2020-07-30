@@ -1,15 +1,18 @@
-# QuantumultX
-qx script
+![Anurag’s github stats](https://github-readme-stats.vercel.app/api?username=nzw9314&show_icons=true&theme=merko)
 
-自己维护自己用的脚本。
+### 说明 :
 
-1.饿了么签到脚本
+* 只是搬运和同步更新大佬脚本.
 
+* 不负责维护脚本.
 
-2.LOL排行查询脚本
+* 只测试自用脚本，其他大部分脚本未测试可用性.
 
+* 更新通知[频道](https://t.me/nzw9314News)
 
-3.testflight公测监控
+### 全局配置：
+
+* [QuantumultX.conf](https://raw.githubusercontent.com/nzw9314/QuantumultX/master/QuantumultX.conf)
 
 
 ### 本地配置：
@@ -79,8 +82,10 @@ qx script
 * [@Neurogram-R](https://github.com/Neurogram-R)
 
 * [@sazs34](https://github.com/sazs34)
-<<<<<<< master
-=======
 
 * [@uniqueque](https://github.com/uniqueque)
->>>>>>> origin/master
+
+
+## License
+
+[GPLv3](LICENSE)
