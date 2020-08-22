@@ -5,7 +5,7 @@
 //推荐每次投喂10个，积累狗粮，然后去聚宝盆赌每小时的幸运奖，据观察，投入3000-6000中奖概率大，超过7000基本上注定亏本，即使是第一名
 //Combine from Zero-S1/JD_tools(https://github.com/Zero-S1/JD_tools)
 //2020。07.02 解决部分商品market.marketLink为空的时候，浏览不到的bug，解决浏览商品奖励积分api接口返回空值导致脚本报错的bug
-const FEED_NUM = 80   // [10,20,40,80]
+const FEED_NUM = 20   // [10,20,40,80]
 
 const $hammer = (() => {
     const isRequest = "undefined" != typeof $request,
