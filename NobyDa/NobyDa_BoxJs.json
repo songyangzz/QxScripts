@@ -8,43 +8,72 @@
     "id": "多合一签到",
     "name": "京东",
     "keys": ["CookieJD", "CookieJD2"],
+    "descs_html": [
+        "<h3 align=\"center\">签到相关教程</h3>",
+        "<p align=\"center\"><iframe src=\"https://www.youtube.com/embed/6vMz1LKF1-8\" width=\"100%\" height=\"100%\"></iframe></p>"
+      ],
     "settings": [{
       "id": "JD_DailyBonusLog",
-      "name": "响应日志",
+      "name": "详细响应日志",
       "val": false,
       "type": "boolean",
-      "desc": ""
+      "desc": "打印原始签到结果, 用于调试脚本, 一般用户建议关闭."
     }, {
-      "id": "JD_DailyBonusDisable",
-      "name": "签到接口启用",
-      "val": ["SpeedUp", "JDBean", "JRBean", "JRDoll", "JRSteel", "JDTurn", "JDGStore", "JDPet", "JDFSale", "Overseas", "JDBook", "JDShand", "JDMakeup", "JDWomen", "JDVege", "JDCash", "JDFood", "JDClean", "JDCare", "JDJewels", "JDCube", "JDPrize", "subsidy", "JDShake", "JRDSign", "Qbear", "TCash", "TSteel"],
+      "id": "JD_Crash_disable",
+      "name": "崩溃自动禁用",
+      "val": true,
+      "type": "boolean",
+      "desc": "脚本运行崩溃时(如VPN断连), 下次运行时将自动禁用相关崩溃接口(仅部分接口启用), 注: 崩溃时可能会误禁用正常接口."
+    }, {
+      "id": "JD_Retry_disable",
+      "name": "签到接口增强",
+      "val": true,
+      "type": "boolean",
+      "desc": "用于部分接口提示\"不含活动数据\"问题, 开启后会进行二次查询, 注: 可能会导致崩溃(小概率)."
+    }, {
+      "id": "JD_Follow_disable",
+      "name": "自动关注店铺",
+      "val": true,
+      "type": "boolean",
+      "desc": "部分接口签到过程可能需要关注店铺, 如介意可选择关闭."
+    }, {
+      "id": "JD_DailyBonusDisables",
+      "name": "签到接口禁用",
+      "val": "",
       "type": "checkboxes",
       "desc": "",
       "items": [
         {"key": "SpeedUp","label": "天天加速"}, 
         {"key": "JDBean","label": "京东京豆"}, 
-        {"key": "JRBean","label": "金融京豆"},
+        {"key": "JRBean","label": "金融金贴"},
         {"key": "JRDoll","label": "金融娃娃"},
         {"key": "JRSteel","label": "金融钢镚"},
         {"key": "JDTurn","label": "京东转盘"},
         {"key": "JDGStore","label": "京东超市"},
+        {"key": "JD3C","label": "京东数码"},
+        {"key": "JDDrug","label": "京东医药"},
+        {"key": "JDTreasure","label": "京东夺宝"},
+        {"key": "JDBaby","label": "京东母婴"},
+        {"key": "JDSubsidy","label": "京东晚市"},
+        {"key": "JDClocks","label": "京东钟表"},
         {"key": "JDPet","label": "京东宠物"},
         {"key": "JDFSale","label": "京东闪购"},
         {"key": "Overseas","label": "京东国际"},
         {"key": "JDBook","label": "京东图书"},
-        {"key": "JDShand","label": "京东二手"},
+        {"key": "JDShand","label": "京东二手 (如VPN重启,建议禁用)"},
         {"key": "JDMakeup","label": "京东美妆"},
         {"key": "JDWomen","label": "京东女装"},
         {"key": "JDVege","label": "京东菜场"},
         {"key": "JDCash","label": "京东红包"},
         {"key": "JDFood","label": "京东美食"},
-        {"key": "JDClean","label": "京东清洁"},
+        {"key": "JDClean","label": "京东清洁 (如VPN重启,建议禁用)"},
         {"key": "JDCare","label": "京东个护"},
         {"key": "JDJewels","label": "京东珠宝 (如VPN重启,建议禁用)"},
         {"key": "JDCube","label": "京东魔方"},
         {"key": "JDPrize","label": "京东大奖"},
         {"key": "JRDSign","label": "金融双签"},
         {"key": "subsidy","label": "京东金贴"},
+        {"key": "JDGetCash","label": "京东现金"},
         {"key": "JDShake","label": "京东摇一摇"},
         {"key": "Qbear","label": "总京豆查询"},
         {"key": "TCash","label": "总红包查询"},
@@ -123,7 +152,7 @@
       "desc": "想签到几个汇总到一个通知里, 这里就填几个(比如我有13个要签到的, 这里填了5, 就会分三次推送通知)"
     }],
     "script": "https://raw.githubusercontent.com/NobyDa/Script/master/BDTieBa-DailyBonus/TieBa.js",
-    "author": "@sazs34 (Original)",
+    "author": "@sazs34, @NobyDa",
     "repo": "https://github.com/sazs34/TaskConfig/blob/master/task/sign_baidu_tieba_v2.js",
     "icons": ["https://raw.githubusercontent.com/Orz-3/mini/master/baidu.png","https://raw.githubusercontent.com/Orz-3/task/master/baidu.png"]
   }, {
